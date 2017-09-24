@@ -10,7 +10,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "backbone-publication": "^1.0.9",
     "express": "^4.15.4",
+    "publication-client": "^1.4.6",
+    "publication-server": "github:mixmaxhq/publication-server#jeff/node8_support",
     "underscore": "^1.8.3"
   },
   "devDependencies": {

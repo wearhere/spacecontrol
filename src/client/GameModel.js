@@ -1,14 +1,8 @@
-import Backbone from 'backbone';
+import { PublicationModel } from 'backbone-publication';
 
-const GameModel = Backbone.Model.extend({
+const GameModel = PublicationModel.extend({
   defaults: {
     progress: 0
-  },
-
-  initialize() {
-    setInterval(() => {
-      this.set('progress', this.get('progress') + 20);
-    }, 1000);
   }
 });
 
