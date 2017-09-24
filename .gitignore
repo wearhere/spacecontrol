@@ -1,0 +1,4 @@
+/spacecontrol.sublime-workspace
+/node_modules
+.DS_Store
+public/build-*.js
