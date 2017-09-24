@@ -1,3 +1,6 @@
 {
-  "extends": "mixmax/browser"
+  "extends": "mixmax/browser",
+  "rules": {
+    "react/prop-types": false
+  }
 }
