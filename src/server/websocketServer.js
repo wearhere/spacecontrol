@@ -19,7 +19,7 @@ module.exports = function(server) {
 
   publicationServer.publish('game', function({ _id }) {
     // Create a game or retrieve the existing game.
-    let game = GameModel.withId(_id);
+    const game = GameModel.withId(_id);
 
     // Publish the current game state.
     game.addPublication(this);
