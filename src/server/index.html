@@ -8,5 +8,11 @@
   <body>
     <div id="app"></div>
   </body>
+  <script type="text/javascript">
+    // Dunno how to get ESLint to shut up about the below, oh well.
+    window.initialPayload = {
+      game: <%= game %>
+    };
+  </script>
   <script src="/public/build-app.js"></script>
 </html>
