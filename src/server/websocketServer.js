@@ -1,4 +1,4 @@
-const GameModel = require('./GameModel');
+const GameModel = require('./models/GameModel');
 const PublicationServer = require('publication-server');
 
 let publicationServer = null;

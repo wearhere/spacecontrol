@@ -1,10 +1,8 @@
 const _ = require('underscore');
 const express = require('express');
 const fs = require('fs');
-const GameModel = require('./GameModel');
+const GameModel = require('./models/GameModel');
 const path = require('path');
-
-const DEFAULT_GAME_ID = 'THE_GAME';
 
 const app = express();
 
@@ -20,7 +18,7 @@ app.use(require('connect-livereload')({
 const indexTemplate = _.template(fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8'));
 app.get('/', function(req, res) {
   res.send(indexTemplate({
-    game: JSON.stringify(GameModel.withId(DEFAULT_GAME_ID))
+    game: JSON.stringify(GameModel.default())
   }));
 });
 

@@ -2,13 +2,20 @@ const http = require('http');
 
 // Create the web server.
 // Need to wrap the Express server in a real HTTP server for the benefit of the publication server.
-let server = http.createServer(require('./webServer'));
+const webServer = http.createServer(require('./webServer'));
 
-// Create the websocket server.
-require('./websocketServer')(server);
+// Create the websocket server and mount it on the web server.
+require('./websocketServer')(webServer);
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, function() {
-  // eslint-disable-next-line no-console
-  console.log(`Web server listening on port ${PORT}…`);
+// Create the panel (socket) server.
+const panelServer = require('./panelServer');
+
+const WEB_PORT = process.env.WEB_PORT || 3000;
+webServer.listen(WEB_PORT, function() {
+  console.log(`Web server listening on port ${WEB_PORT}…`);
+});
+
+const PANEL_PORT = process.env.PANEL_PORT || 8000;
+panelServer.listen(PANEL_PORT, () => {
+  console.log(`Panel server listening on port ${PANEL_PORT}…`);
 });
