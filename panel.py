@@ -3,9 +3,16 @@ import os
 import socket
 
 # As controls connect/disconnect, add and remove from this list, then call `announce` again.
-controls = [
-  { 'id': 0, 'type': 'button', 'state': 0, 'action': 'Defenestrate', 'item': 'aristocracy' }
-]
+controls = [{
+  'id': 0,
+  'type': 'button',
+  'state': 0,
+  # This key is unused for a button since buttons can only go to 1. But if this were a switch we
+  # might do `[0, 1]`. A dial or slider could be `[0, 1, 2, 3]`.
+  # 'possibleStates': [...],
+  'action': 'defenestrate',
+  'item': 'aristocracy'
+}]
 
 sock = socket.socket()
 sock.connect(('localhost', os.getenv('CONTROLLER_PORT', 8000)))

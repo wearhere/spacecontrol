@@ -5,6 +5,7 @@ const ControlModel = Backbone.Model.extend({
     id: null,
     type: null,
     state: null,
+    possibleStates: null,
     action: null,
     item: null
   },
@@ -15,11 +16,16 @@ const ControlModel = Backbone.Model.extend({
     switch (this.get('type')) {
       case 'button':
         return {
-          display: `${this.get('action')} the ${this.get('item')}!`,
+          display: `${titlecase(this.get('action'))} the ${this.get('item')}!`,
           state: 1
         };
     }
   }
 });
+
+function titlecase(str) {
+  if (!str) return str;
+  return str[0].toUpperCase() + str.slice(1);
+}
 
 module.exports = ControlModel;
