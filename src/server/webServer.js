@@ -22,9 +22,4 @@ app.get('/', function(req, res) {
   }));
 });
 
-app.get('/press-button', function(req, res) {
-  GameModel.trigger('button-pressed');
-  res.status(204).end();
-});
-
 module.exports = app;
