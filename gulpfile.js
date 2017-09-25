@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const _ = require('underscore');
 const babel = require('rollup-plugin-babel');
 const cache = require('gulp-cached');
