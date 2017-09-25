@@ -53,8 +53,13 @@ const GameModel = Backbone.Model.extend({
   },
 
   _controlsChanged() {
-    // TODO(jeff): If we lost a control we were telling users to manipulate, need to tell users
-    // to do something else--and we should only be setting a new command if this has happened.
+    // TODO(jeff): We should only be setting new commands if
+    //
+    //  1. New panels have joined
+    //  2. A control described by a current command has been lost
+    //  3. One or more existing panels have finished their commands
+    //
+    // Whereas currently we blow away existing panels' commands always.
 
     const allControls = this.panels.reduce((controls, panel) => {
       controls.push(...panel.controls.models);
