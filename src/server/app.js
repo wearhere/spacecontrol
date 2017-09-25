@@ -8,6 +8,13 @@ const app = express();
 
 app.use('/public', express.static(path.join(__dirname, '../../public')));
 
+app.use(require('connect-livereload')({
+  port: 22222,
+  plugins: [
+    '/public/lib/livereload-require-js-includes/index.js'
+  ]
+}));
+
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, 'index.html'));
 });

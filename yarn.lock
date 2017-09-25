@@ -674,6 +674,10 @@ connect-backbone-to-react@^1.4.0:
     lodash.debounce "^4.0.8"
     prop-types "^15.5.8"
 
+connect-livereload@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/connect-livereload/-/connect-livereload-0.6.0.tgz#f9f009874ad6837183afb170b4c4e3857a1d7ceb"
+
 connected@0.0.x:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/connected/-/connected-0.0.2.tgz#7b5755b216ce31ffabccc38e9f4e1dfc1c3b7c6d"

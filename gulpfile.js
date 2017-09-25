@@ -102,7 +102,7 @@ gulp.task('watch', function() {
 gulp.task('server', function() {
   nodemon({
     script: 'src/server/app.js',
-    ext: 'js',
+    ext: 'js, html',
     watch: ['src/server/**/*']
   })
     .on('restart', function() {
