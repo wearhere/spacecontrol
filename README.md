@@ -46,10 +46,11 @@ bit across the field.
 
 ## So what's expected of the panels?
 
-They should open socket connections to `localhost:8000` and communicate with the server by JSON-encoding data of the format
+They should open socket connections to `localhost:8000` and communicate with the server by sending
+JSON-encoding data of the below format, plus a carriage return:
 
 ```
-{ "message": "a string", "data": <any JSON-serializable data> }
+{ "message": "a string", "data": <any JSON-serializable data> } + "\r"
 ```
 
 They should maintain a list of the controls attached to the panel, in the format shown
