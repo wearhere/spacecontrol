@@ -67,7 +67,7 @@ When an event with `message: 'display'` is received, the panel should display th
 When a control is manipulated, the panel should send an event like
 
 ```
-{ "message": "set-state", "data": { "id": "the ID of the control that changed", "state": "the control's new state" } }
+{ "message": "set-state", "data": { "id": <the ID of the control that changed>, "state": <the control's new state> } }
 ```
 
 ## Questions or concerns?
