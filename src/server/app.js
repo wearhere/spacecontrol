@@ -1,15 +1,20 @@
 const express = require('express');
-
-const app = express();
-
+const GameModel = require('./GameModel');
 const http = require('http');
 const path = require('path');
 const PublicationServer = require('publication-server');
+
+const app = express();
 
 app.use('/public', express.static(path.join(__dirname, '../../public')));
 
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/press-button', function(req, res) {
+  GameModel.trigger('button-pressed');
+  res.status(204).end();
 });
 
 let server = http.createServer(app);
@@ -26,15 +31,17 @@ const publications = new PublicationServer({
 });
 
 publications.publish('game', function({ _id }) {
-  let progress = 0;
+  // Create a game or retrieve the existing game.
+  let game = GameModel.withId(_id);
 
-  this.added('game', _id, { _id, progress });
+  // Publish the current game state.
+  game.addPublication(this);
 
+  // Tell the client that all data has been published.
   this.ready();
 
-  setInterval(() => {
-    this.changed('game', _id, { progress: progress += 10 });
-  }, 1000);
+  // Cleanup if the client disconnects.
+  this.onStop(() => game.removePublication(this));
 });
 
 const PORT = process.env.PORT || 3000;
