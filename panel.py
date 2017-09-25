@@ -22,7 +22,7 @@ def send(message, data):
 
 # TODO: Make this repeatable so that we can receive additional messages even if we read past a single
 # message (currently we drop `following_text`), and non-blocking so that it can be interspersed with
-# messages from the controls and consequent announcements to the main controller. Not sure how to do
+# messages from the controls and consequent announcements to the controller. Not sure how to do
 # those things!
 def receive():
   buffer = ''
