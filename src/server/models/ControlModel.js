@@ -16,6 +16,7 @@ const ControlModel = Backbone.Model.extend({
     switch (this.get('type')) {
       case 'button':
         return {
+          // TODO(jeff): Make this more flexible to handle commands like "octo bite raven girl nipple".
           display: `${titlecase(this.get('action'))} the ${this.get('item')}!`,
           state: 1
         };
