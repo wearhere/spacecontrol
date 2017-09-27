@@ -1,4 +1,5 @@
 const Backbone = require('backbone');
+const CommandModel = require('./CommandModel');
 
 const ControlModel = Backbone.Model.extend({
   defaults: {
@@ -6,27 +7,24 @@ const ControlModel = Backbone.Model.extend({
     type: null,
     state: null,
     possibleStates: null,
-    action: null,
-    item: null
+    action: null
   },
 
   // Returns something that the user might do with this control.
   // Should be random for controls with multi-valued states.
   getCommand() {
+    let action, state;
+
     switch (this.get('type')) {
       case 'button':
-        return {
-          // TODO(jeff): Make this more flexible to handle commands like "octo bite raven girl nipple".
-          display: `${titlecase(this.get('action'))} the ${this.get('item')}!`,
-          state: 1
-        };
+        // TODO(jeff): Make this more flexible to handle commands like "octo bite raven girl nipple".
+        action = this.get('action');
+        state = 1;
+        break;
     }
+
+    return new CommandModel({ control: this, action, state });
   }
 });
-
-function titlecase(str) {
-  if (!str) return str;
-  return str[0].toUpperCase() + str.slice(1);
-}
 
 module.exports = ControlModel;

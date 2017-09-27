@@ -10,8 +10,7 @@ controls = [{
   # This key is unused for a button since buttons can only go to 1. But if this were a switch we
   # might do `[0, 1]`. A dial or slider could be `[0, 1, 2, 3]`.
   # 'possibleStates': [...],
-  'action': 'defenestrate',
-  'item': 'aristocracy'
+  'action': 'Defenestrate the aristocracy!'
 }]
 
 sock = socket.socket()

@@ -3,7 +3,8 @@ const ControlCollection = require('./ControlCollection');
 
 const PanelModel = Backbone.Model.extend({
   defaults: {
-    display: null
+    display: null,
+    command: null
   },
 
   initialize(attrs, { connection }) {
@@ -13,6 +14,17 @@ const PanelModel = Backbone.Model.extend({
 
     this.on('change:display', (_, display) => {
       this._send('display', { display });
+    });
+
+    this.on('change:command', (_, command) => {
+      const previousCommand = this.previous('command');
+      if (previousCommand) this.stopListening(previousCommand);
+      if (command) {
+        this.set('display', command.get('action'));
+        this.listenTo(command, 'change:completed', () => {
+          this.set('display', 'Nice job!');
+        });
+      }
     });
   },
 

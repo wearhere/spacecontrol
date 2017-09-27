@@ -14,14 +14,19 @@ const GameModel = Backbone.Model.extend({
   initialize() {
     this.panels = new Backbone.Collection();
 
-    this._publications = [];
-
     this.listenTo(this.panels, {
       add: (panel) => {
         this._controlsChanged();
 
         this.listenTo(panel.controls, {
-          update: () => this._controlsChanged()
+          update: () => this._controlsChanged(),
+
+          'change:state': (control, state) => {
+            const command = this._commands.findWhere({ control });
+            if (command && (state === command.get('state'))) {
+              command.set('completed', true);
+            }
+          }
         });
       },
 
@@ -33,7 +38,18 @@ const GameModel = Backbone.Model.extend({
       }
     });
 
+    this._commands = new Backbone.Collection();
+    this.listenTo(this._commands, {
+      'change:completed': (command) => {
+        this._commands.remove(command);
+        // TODO(jeff): Assign a new command to the panel.
+        this.panels.findWhere({ command }).unset('command');
+        this.set('progress', this.get('progress') + 10);
+      }
+    });
+
     // Whenever game state mutates, publish it to the `GameModel` client-side.
+    this._publications = [];
     this.on('change', () => {
       _.each(this._publications, (publication) => {
         publication.changed('game', this.id, this.changedAttributes());
@@ -74,18 +90,8 @@ const GameModel = Backbone.Model.extend({
       const control = controls.pop();
       if (control) { // There could theoretically be fewer controls than panels.
         const command = control.getCommand();
-        panel.set('display', command.display);
-
-        // TODO(jeff): It would be nice to register the listener only once, perhaps on the controls
-        // collections since those will proxy through the control events.
-        this.listenTo(control, 'change:state', (_, state) => {
-          if (state === command.state) {
-            this.stopListening(control, 'change:state');
-            this.set('progress', this.get('progress') + 10);
-
-            // TODO(jeff): Give this panel another command now.
-          }
-        });
+        panel.set('command', command);
+        this._commands.add(command);
       }
     });
   }
