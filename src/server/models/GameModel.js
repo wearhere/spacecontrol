@@ -16,10 +16,13 @@ const GameModel = Backbone.Model.extend({
 
     this.listenTo(this.panels, {
       add: (panel) => {
-        this._controlsChanged();
+        this._assignCommands();
 
         this.listenTo(panel.controls, {
-          update: () => this._controlsChanged(),
+          update: (_, { changes: { added, removed } }) => {
+            this._controlsRemoved(removed);
+            if (!_.isEmpty(added)) this._assignCommands();
+          },
 
           'change:state': (control, state) => {
             const command = this._commands.findWhere({ control });
@@ -31,10 +34,12 @@ const GameModel = Backbone.Model.extend({
       },
 
       remove: (panel) => {
-        panel.controls.forEach((control) => this.stopListening(control));
+        this._controlsRemoved(panel.controls.models);
         this.stopListening(panel.controls);
+      },
 
-        this._controlsChanged();
+      'change:command': (panel, command) => {
+        if (!command) this._assignCommands();
       }
     });
 
@@ -42,7 +47,6 @@ const GameModel = Backbone.Model.extend({
     this.listenTo(this._commands, {
       'change:completed': (command) => {
         this._commands.remove(command);
-        // TODO(jeff): Assign a new command to the panel.
         this.panels.findWhere({ command }).unset('command');
         this.set('progress', this.get('progress') + 10);
       }
@@ -68,27 +72,43 @@ const GameModel = Backbone.Model.extend({
     this._publications = _.without(this._publications, publication);
   },
 
-  _controlsChanged() {
-    // TODO(jeff): We should only be setting new commands if
-    //
-    //  1. New panels have joined
-    //  2. A control described by a current command has been lost
-    //  3. One or more existing panels have finished their commands
-    //
-    // Whereas currently we blow away existing panels' commands always.
+  _controlsRemoved(controls) {
+    controls.forEach((control) => {
+      const command = this._commands.findWhere({ control });
+      if (command) {
+        this._commands.remove(command);
+        const panel = this.panels.findWhere({ command });
+        // Note that the panel might not exist if the controls were removed because the entire panel
+        // disconnected.
+        if (panel) panel.unset('command');
+      }
+    });
+  },
+
+  // Assigns commands to panels needing commands, which happens when:
+  //
+  //  1. New panels and/or controls have joined
+  //  2. A control described by a current command has been lost (possibly because the panel has
+  //     disconnected)
+  //  3. One or more existing panels have finished their commands
+  _assignCommands() {
+    // Choose as many controls to manipulate as there are panels needing commands.
+    const panelsNeedingCommands = this.panels.filter((panel) => !panel.has('command'));
+    if (_.isEmpty(panelsNeedingCommands)) return;
 
     const allControls = this.panels.reduce((controls, panel) => {
       controls.push(...panel.controls.models);
       return controls;
     }, []);
 
-    // Choose as many controls to manipulate as there are panels.
-    const controls = _.sample(allControls, this.panels.length);
+    const inactiveControls = _.difference(allControls, this._commands.pluck('control'));
+
+    const controlsToAssign = _.sample(inactiveControls, panelsNeedingCommands.length);
 
     // Now assign these to panels.
-    this.panels.forEach((panel) => {
-      const control = controls.pop();
-      if (control) { // There could theoretically be fewer controls than panels.
+    panelsNeedingCommands.forEach((panel) => {
+      const control = controlsToAssign.pop();
+      if (control) { // There could theoretically be fewer inactive controls than panels.
         const command = control.getCommand();
         panel.set('command', command);
         this._commands.add(command);
