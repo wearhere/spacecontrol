@@ -31,37 +31,47 @@ const PanelModel = Backbone.Model.extend({
   _setUpConnection(connection) {
     connection.setEncoding('utf8');
 
-    // HACK(jeff): Here we're assuming that we'll receive the Python `sendall`, i.e. a single
-    // JSON-encoded, carriage-return-delimited blob, in exactly one chunk. Not sure if that's
-    // guaranteed.
+    // It's not guaranteed that we'll receive the Python `sendall`, i.e. a single JSON-encoded,
+    // carriage-return-delimited blob, in exactly one chunk; we need to expect we might receive more
+    // or less data than that and so buffer the data.
+    const EVENT_DELIMITER = '\r';
+    let buffer = '';
     connection.on('data', (chunk) => {
-      let event;
-      try {
-        event = JSON.parse(chunk);
-      } catch (e) {
-        console.error(`Invalid panel message received: ${chunk}`);
-        return;
-      }
+      buffer += chunk;
 
-      const { message, data } = event;
-      switch (message) {
-        case 'announce': {
-          const { controls } = data;
-          this.controls.reset(controls, {
-            silent: false // Ensure an 'update' event is fired.
-          });
-          break;
+      let endOfEvent;
+      while ((endOfEvent = buffer.indexOf(EVENT_DELIMITER)) !== -1) {
+        let rawEvent = buffer.substring(0, endOfEvent);
+        buffer = buffer.substring(endOfEvent + EVENT_DELIMITER.length);
+
+        let event;
+        try {
+          event = JSON.parse(rawEvent);
+        } catch (e) {
+          console.error(`Invalid panel message received: ${chunk}`);
+          continue;
         }
-        case 'set-state': {
-          const { id, state } = data;
-          const control = this.controls.get(id);
-          if (!control) {
-            // TODO(jeff): The panels should probably also have IDs to make best sense of this.
-            console.error('Received state change event for unknown control:', id);
-            return;
+
+        const { message, data } = event;
+        switch (message) {
+          case 'announce': {
+            const { controls } = data;
+            this.controls.reset(controls, {
+              silent: false // Ensure an 'update' event is fired.
+            });
+            break;
           }
-          control.set('state', state);
-          break;
+          case 'set-state': {
+            const { id, state } = data;
+            const control = this.controls.get(id);
+            if (!control) {
+              // TODO(jeff): The panels should probably also have IDs to make best sense of this.
+              console.error('Received state change event for unknown control:', id);
+              return;
+            }
+            control.set('state', state);
+            break;
+          }
         }
       }
     });
