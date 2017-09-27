@@ -54,7 +54,17 @@ const PanelModel = Backbone.Model.extend({
       }
     });
 
-    connection.on('end', () => {
+    connection.on('error', (err) => {
+      if (err.code === 'ECONNRESET') {
+        // This happens when the connection closes before the other end has read everything that
+        // we've written to it. We assume that the panel connection could drop at any time so don't
+        // bother logging this.
+      } else {
+        console.error('Panel connection errored:', err);
+      }
+    });
+
+    connection.on('close', () => {
       this.trigger('destroy', this, this.collection);
       this._connection = null;
     });
