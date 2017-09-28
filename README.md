@@ -90,3 +90,8 @@ verbose code, perhaps you Python folks know!
 
 [spaceship control panels]: https://github.com/igor47/spaceboard
 [latest Node]: https://nodejs.org/en/
+
+## TODO
+
+- Control sends timeout along with message
+- Panel tells control if timeout elapses before new message
