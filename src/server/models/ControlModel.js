@@ -14,8 +14,7 @@ const ControlModel = Backbone.Model.extend({
     const attrs = _.clone(hash);
 
     if (_.isArray(attrs.actions)) {
-      const states = attrs.actions[0];
-      const templateAction = attrs.actions[1];
+      const [states, templateAction] = attrs.actions;
       attrs.actions = _.object(states, _.times(states.length, (i) => {
         // HACK(jeff): Pretty sure taking remote input and passing it through a formatter is a huge
         // security risk.
