@@ -3,37 +3,78 @@ import json
 import os
 import socket
 
-# As controls connect/disconnect, add and remove from this list, then call `announce` again.
+# A control is any object that the player can manipulate to put in one or more states. A control can
+# be anything from a button to a switch to a dial to a pair of dolls that you touch against each
+# other.
+#
+# It's ok to have multiple controls of the same form, i.e. multiple buttons, as long as they can
+# be clearly identified. This may be a matter of just labeling them differently. See `actions` for
+# tips on naming.
+#
+# This is a list of all controls monitored by this control panel. As controls
+# connect/disconnect, add and remove from this list, then call `announce` again.
 controls = [{
-  # Anything descriptive and unique.
+  # An identifier for the control. Must be unique per-panel.
   'id': 'foo',
 
-  # One of 'button', TBD.
+  # The current state of the control. This should always be a string even if the state is numeric
+  # (this is because the keys of `actions` won't be able to be JSON-serialized if numeric).
+  #
+  # The values of this will depend on the control. For a button or a switch, `state` might be one
+  # of `['0', '1']` or `['off', 'on']`. For a multi-valued control like a dial or slider, `state`
+  # might be one of `['0', '1', '2', '3']` or `['red', 'green', 'yellow'].
+  'state': '0',
+
+  # Possible things that the player might do to or with the control. This is a map where the keys
+  # are the possible values of `state` (see above), and the values are how the player puts the
+  # control in that state ("actions").
+  #
+  # You'll notice that the value of '0' here is the empty string. This represents the player not
+  # having to do anything to put the control in this state, as would be the case for a button-like
+  # control, where if the player stops touching the control it will automatically return to this
+  # state.
+  #
+  # The game may ask the player to perform any non-empty action. The action will be displayed to the
+  # user, so make it clear and exciting. Actions should be globally unique, since players will be
+  # shouting these across the room. It's possible to unique actions by being creative about what
+  # the control is called and does (and labeling the physical control accordingly). For instance,
+  # notice how the action here is to "defenestrates the aristocracy", not merely "push the button".
+  # Another button might "launch the missiles". Two dials might respectively be labeled
+  # "Froomulator" and "Hypervisor", with actions "Set Froomulator to 1" vs. "Set Hypervisor to 1".
+  #
+  # See the third control below for a shorthand way to define `actions` for dial-like controls.
+  'actions': {
+    '0': '',
+    '1': 'Defenestrate the aristocracy!'
+  },
+
+    # HACK(jeff): `'type': 'button'` is only present to be able to play the game via the CLI, see
+    # where this is read at the bottom of this script.
   'type': 'button',
+}, {
+  'id': 'octo',
 
-  # Anything JSON-serializable and descriptive when displayed to the player, see `possibleStates`
-  # and `action`.
-  'state': 0,
+  'state': 'nothing',
 
-  # This is `[0, 1]` since a button can just be pressed or not. We might also do `['off', 'on']`
-  # or, for a multi-valued control like a dial or slider, `[0, 1, 2, 3]` or `['red',
-  # 'green', 'yellow'].
-  #
-  # If this control has *persistent state* or *greater than 2 states* i.e. is
-  # a switch or dial or slider where the player needs to put the control into that state and then
-  # explicitly put it into a different state (without it automatically resetting), you should tell
-  # the player which state to put it into by interpolating it into `action` as described below.
-  #
-  # If these states will be interpolated into `action`, they should be intelligible, i.e. if your
-  # switch has labels like "foo", "bar", "baz", those should be the values of `possibleStates` not
-  # `[0, 1, 2]` since the player won't know how those map onto the physical control.
-  'possibleStates': [0, 1],
+  'actions': {
+    'nothing': '',
+    'nipple': 'Octo bite raven girl nipple!',
+    'mouth': 'Octo kiss raven girl mouth!'
+  },
 
-  # The thing that the player might do with the control when the game selects it.
-  #
-  # If `action` contains `%s` then the game will tell the player to manipulate this control by
-  # interpolating one of `possibleStates` into `action` at that position.
-  'action': 'Defenestrate the aristocracy!'
+  'type': 'button'
+}, {
+  'id': 'Froomulator',
+
+  'state': '0',
+
+  # This is a shorthand form of `states`, where the first value (the array) contains the values for
+  # `state`, and the second value (the string) is a "template action": the actual actions for each
+  # state will be formed by replacing "%s" with the state.
+  'actions': [
+    ['0', '1', '2'],
+    'Set Froomulator to %s!'
+  ]
 }]
 
 sock = socket.socket()
@@ -74,20 +115,12 @@ while (True):
 
   control_id, space, state = raw_input('Set state: ').partition(' ')
 
-  try:
-    # HACK(jeff): Support numeric states by trying to parse as an int.
-    # ???(jeff): Is this the simplest way of parsing an int in Python?
-    state = locale.atoi(state)
-  except Exception:
-    # Guess it was a string.
-    pass
-
   send('set-state', { 'id': control_id, 'state': state })
 
   # HACK(jeff): We need to explicitly reset buttons' state while playing from the CLI, whereas a
   # physical button's state would automatically reset when the player lifted their finger off.
   control = filter(lambda c: c['id'] == control_id, controls)[0]
-  if control['type'] == 'button':
-    send('set-state', { 'id': control_id, 'state': 0 })
+  if ('type' in control) and (control['type'] == 'button'):
+    send('set-state', { 'id': control_id, 'state': '0' })
 
 # `sock` will automatically close when the script finishes or is terminated.

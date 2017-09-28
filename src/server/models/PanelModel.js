@@ -57,7 +57,8 @@ const PanelModel = Backbone.Model.extend({
           case 'announce': {
             const { controls } = data;
             this.controls.reset(controls, {
-              silent: false // Ensure an 'update' event is fired.
+              silent: false, // Ensure an 'update' event is fired.
+              parse: true
             });
             break;
           }
