@@ -31,18 +31,26 @@ server. Press Ctrl-C to kill all the servers.
 
 Visit `http://localhost:3000` in your browser. You will see a glorious "spaceship".
 
-Now, run `python panel.py` one or more times in a separate terminal. Every time that you do,
-you will see the spaceship move a little bit across the screen. You will also see
-"Defenestrate the aristocracy!" appear in the terminal where you ran the Python script.
-What happened there:
+Now, run `python panel.py` in a separate terminal. It will print a message to the console. Let's say
+it says "Defenestrate the aristocracy!" Go find this message within the `controls` list in
+`panel.py`. Type the `id` of the top-level dict containing it, a space, and its key within the
+`actions` dict. In this case you would type "foo 1". Then press enter.
+
+You'll see "Nice job", the spaceship will move a little bit across the screen, and you'll get a new
+command to perform as above.
+
+You just acted as a spaceteam!
+
+More precisely:
 
 1. The Python script opened a connection to the socket server as if a panel had suddenly
 joined the local network.
-2. When the "panel" joined, it announced what controls it had attached: one button whose "action" is "defenestrate" and "item" is "aristocracy". Thus the "thing you do" with the button is "Defenestrate the aristocracy".
+2. When the "panel" joined, it announced what controls it had attached, including a button that can
+be pressed (state "1") to "Defenestrate the aristocracy!"
 3. The server told the panel to display to the player that they should "Defenestrate the aristocracy!"
-4. The panel told the server that the button was pressed.
-5. Since the "player" performed the command, they caused the spaceship to travel a little
-bit across the field.
+4. You told the panel to tell the server that the button was pressed (as if you had actually pressed
+a physical button).
+5. Since you performed the command, you caused the spaceship to travel a little bit across the field.
 
 ## So what's expected of the panels?
 
