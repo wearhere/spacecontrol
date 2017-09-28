@@ -39,7 +39,7 @@ it says "Defenestrate the aristocracy!" Go find this message within the `control
 You'll see "Nice job", the spaceship will move a little bit across the screen, and you'll get a new
 command to perform as above.
 
-You just acted as a spaceteam!
+You just acted… as a spaceteam!
 
 More precisely:
 
