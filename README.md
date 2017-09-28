@@ -101,5 +101,8 @@ verbose code, perhaps you Python folks know!
 
 ## TODO
 
-- Control sends timeout along with message
-- Panel tells control if timeout elapses before new message
+- Timeouts
+  - Control sends timeout along with message
+  - Panel tells control if timeout elapses before new message
+- Game join / start mechanism
+- Game end mechanism
