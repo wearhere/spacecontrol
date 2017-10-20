@@ -61,7 +61,7 @@ const build = new MultiBuild({
       })
     ],
     format: 'iife',
-    sourcemap: true
+    sourceMap: true
   },
   output: (target, input) => {
     return input
