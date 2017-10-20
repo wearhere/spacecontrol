@@ -21,7 +21,7 @@ const PanelModel = Backbone.Model.extend({
       if (previousCommand) this.stopListening(previousCommand);
       if (command) {
         this.set('display', command.get('action'));
-        this.listenTo(command, 'change:completed', () => {
+        this.listenToOnce(command, 'change:completed', () => {
           this.set('display', 'Nice job!');
         });
       }
