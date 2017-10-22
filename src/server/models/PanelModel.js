@@ -1,5 +1,6 @@
 const Backbone = require('backbone');
 const ControlCollection = require('./ControlCollection');
+const Cobs = require('cobs');
 
 const PanelModel = Backbone.Model.extend({
   defaults: {
@@ -34,8 +35,9 @@ const PanelModel = Backbone.Model.extend({
     // It's not guaranteed that we'll receive the Python `sendall`, i.e. a single JSON-encoded,
     // carriage-return-delimited blob, in exactly one chunk; we need to expect we might receive more
     // or less data than that and so buffer the data.
-    const EVENT_DELIMITER = '\r';
+    const EVENT_DELIMITER = '\x00';
     let buffer = '';
+
     connection.on('data', (chunk) => {
       buffer += chunk;
 
@@ -46,7 +48,8 @@ const PanelModel = Backbone.Model.extend({
 
         let event;
         try {
-          event = JSON.parse(rawEvent);
+          decoded = Cobs.decode(Buffer(rawEvent)).toString();
+          event = JSON.parse(decoded);
         } catch (e) {
           console.error(`Invalid panel message received: ${chunk}`);
           continue;
@@ -97,8 +100,10 @@ const PanelModel = Backbone.Model.extend({
 
   _send(message, data) {
     if (!this._connection) return; // Connection might have closed.
+    const str = JSON.stringify({ message, data });
+    const encoded = Cobs.encode(Buffer(str)).toString()
 
-    this._connection.write(JSON.stringify({ message, data }) + '\r');
+    this._connection.write(encoded + '\x00');
   }
 });
 
