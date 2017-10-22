@@ -95,15 +95,18 @@ say from experience that this will be able to handle many many socket connection
 falling over or even slowing. It also simplifies the development environment since the
 frontend is in JavaScript too.
 
-The panels, separated as they are by the sockets, can easily be in a different language
-(though I suspect that Node would simplify writing them too 🙈, see next topic).
+The panels, separated as they are by the sockets, can easily be in a different language.
+Python has been chosen for familiarity / availability of Raspberry Pi code snippets.
 
----
+## Running in production
 
-_It seems that by default, reading from a socket in Python is blocking!_ This will not do:
-while panels wait to receive new commands, they must also be sending updates regarding the
-state of controls. I couldn't find out how to do this at least not without some extremely
-verbose code, perhaps you Python folks know!
+Both the Node server and the Python panel code will be run on Raspberry Pis, the Python code
+since the control panels need to interface with the controls over serial pins, the Node server
+so that we don't have to leave a laptop lying out to play the game.
+
+The Raspberry Pis will be wired together over local Ethernet to avoid assuming that the game
+venue will have reliable WiFi. The panel scripts (`panel.py`) will be launched with the
+`CONTROLLER_IP` environment variable set to the static IP of the control Pi.
 
 [spaceship control panels]: https://github.com/igor47/spaceboard
 [latest Node]: https://nodejs.org/en/

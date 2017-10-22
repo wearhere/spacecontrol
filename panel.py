@@ -105,7 +105,7 @@ print 'Your controls are: ', json.dumps(controls, indent=2)
 # Make the connection non-blocking _after_ connecting to avoid this nonsense:
 # https://stackoverflow.com/a/6206705/495611
 sock = socket.socket()
-sock.connect(('localhost', os.getenv('CONTROLLER_PORT', 8000)))
+sock.connect((os.getenv('CONTROLLER_IP', 'localhost'), os.getenv('CONTROLLER_PORT', 8000)))
 sock.setblocking(0)
 
 def send(message, data):
