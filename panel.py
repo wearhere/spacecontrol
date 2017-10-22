@@ -6,6 +6,8 @@ import sys
 import threading
 import time
 
+from panel_client import Client
+
 # A control is any object that the player can manipulate to put in one or more states. A control can
 # be anything from a button to a switch to a dial to a pair of dolls that you touch against each
 # other.
@@ -83,19 +85,8 @@ controls = [{
 }]
 
 
-# Connect to controller and apprise it of our controls.
-# Make the connection non-blocking _after_ connecting to avoid this nonsense:
-# https://stackoverflow.com/a/6206705/495611
-sock = socket.socket()
-sock.setblocking(0)
-
 def send(message, data):
   sock.sendall(json.dumps({ "message": message, "data": data }) + '\r')
-
-def announce():
-  send("announce", { "controls": controls })
-
-
 
 # Handle events from controls and the controller.
 
@@ -110,67 +101,6 @@ def readKeyboard():
     control_id, space, state = raw_input().partition(' ')
     if control_id and state:
       control_queue.append((control_id, state))
-
-def receiveControl():
-  try:
-    state_change = control_queue.pop(0) # Pops from start of list.
-  except:
-    # Ignore the queue being empty.
-    return False
-
-  control_id, state = state_change
-
-  try:
-    control = filter(lambda c: c['id'] == control_id, controls)[0]
-  except:
-    # The player entered invalid input like trying to manipulate a control that wasn't on their board.
-    return False
-
-  send('set-state', { 'id': control_id, 'state': state })
-
-  # HACK(jeff): We need to explicitly reset buttons' state while playing from the CLI, whereas a
-  # physical button's state would automatically reset when the player lifted their finger off.
-  if ('type' in control) and (control['type'] == 'button'):
-    send('set-state', { 'id': control_id, 'state': '0' })
-
-  return True
-
-buffer = ''
-def receiveController():
-  global buffer
-
-  while True:
-    try:
-      data = sock.recv(4096) # Arbitrary / maximum length.
-    except:
-      # If the buffer is empty, we return as not having handled an event.
-      # Otherwise we wait for the rest of the data corresponding to this event.
-      if not buffer:
-        return False
-      else:
-        continue
-
-    buffer += data
-
-    # Note that we may receive multiple events at once.
-    while buffer:
-      raw_event, carriage_return, following_text = buffer.partition('\r')
-      try:
-        event = json.loads(raw_event)
-      except:
-        # We didn't receive a complet message.
-        buffer = raw_event
-        break
-
-      if event['message'] == 'display':
-        display = event['data']['display']
-        print '> ' + display
-
-      # Resume processing the text after the message--possibly another event.
-      buffer = following_text
-
-  return True
-
 
 def main(args):
   global sock, controls, should_exit
@@ -200,18 +130,42 @@ def main(args):
         os.getenv('CONTROLLER_IP', 'localhost'),
         os.getenv('CONTROLLER_PORT', 8000),
       )
-    sock.connect(remote)
-    announce()
+    c = Client()
+    c.connect(remote)
+
+    c.send('announce', { 'controls': controls })
 
     # start reading keyboard
     keyboard_reader = threading.Thread(target=readKeyboard)
     keyboard_reader.start()
 
     # main loop
-    while (True):
-      for receiver in [receiveControl, receiveController]:
-        if receiver():
-          continue
+    while True:
+      # read events from the network
+      event = c.read()
+      if event is not None:
+        if event['message'] == 'display':
+          display = event['data']['display']
+          print '> ' + display
+
+      # handle local events
+      try:
+        control_id, state = control_queue.pop(0)
+      except:
+        pass
+      else:
+        try:
+          control = filter(lambda c: c['id'] == control_id, controls)[0]
+        except:
+          print "no controls with control_id %s" % control_id
+        else:
+          c.send('set-state', { 'id': control_id, 'state': state })
+
+          # HACK(jeff): We need to explicitly reset buttons' state while
+          # playing from the CLI, whereas a physical button's state would
+          # automatically reset when the player lifted their finger off.
+          if ('type' in control) and (control['type'] == 'button'):
+            c.send('set-state', { 'id': control_id, 'state': '0' })
 
       # Wait for an event to occur.
       time.sleep(0.1)
