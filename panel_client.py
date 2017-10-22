@@ -21,6 +21,9 @@ class Client:
     self._socket.connect((host, port))
     self._socket.setblocking(0)
 
+  def stop(self):
+    self._socket.close()
+
   def send(self, message, data):
     """encodes and sends a message to the server"""
     msg = self.encode({

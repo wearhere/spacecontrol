@@ -85,14 +85,8 @@ controls = [{
 }]
 
 
-def send(message, data):
-  sock.sendall(json.dumps({ "message": message, "data": data }) + '\r')
-
-# Handle events from controls and the controller.
-
 # Mimic controls changing by the player entering keyboard input.
 # Use a thread to allow blocking reads thereof.
-
 control_queue = []
 should_exit = False
 def readKeyboard():
@@ -103,7 +97,7 @@ def readKeyboard():
       control_queue.append((control_id, state))
 
 def main(args):
-  global sock, controls, should_exit
+  global controls, should_exit
 
   # HACK(jeff): Multiple panels can't have the same controls. So when playing
   # via the CLI, we divvy up the controls between players.
@@ -172,15 +166,15 @@ def main(args):
   except KeyboardInterrupt:
     return 0
   finally:
+    if c:
+      c.stop()
+
     should_exit = True
     # TODO: we cannot do this because we use an un-timed-out raw_input
     # so the keyboard reader thread is stuck, and cannot check it's flag
     # we need to just read from stdin there, instead of using buffered reads
     #if keyboard_reader:
     #  keyboard_reader.join()
-
-    if sock:
-      sock.close()
 
 # Play the game.
 if __name__ == "__main__":
