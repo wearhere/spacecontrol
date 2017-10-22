@@ -37,7 +37,7 @@ controls = [{
   # state.
   #
   # The game may ask the player to perform any non-empty action. The action will be displayed to the
-  # user, so make it clear and exciting. Actions should be globally unique, since players will be
+  # player, so make it clear and exciting. Actions should be globally unique, since players will be
   # shouting these across the room. It's possible to unique actions by being creative about what
   # the control is called and does (and labeling the physical control accordingly). For instance,
   # notice how the action here is to "defenestrates the aristocracy", not merely "push the button".
