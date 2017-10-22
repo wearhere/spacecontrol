@@ -95,15 +95,8 @@ say from experience that this will be able to handle many many socket connection
 falling over or even slowing. It also simplifies the development environment since the
 frontend is in JavaScript too.
 
-The panels, separated as they are by the sockets, can easily be in a different language
-(though I suspect that Node would simplify writing them too 🙈, see next topic).
-
----
-
-_It seems that by default, reading from a socket in Python is blocking!_ This will not do:
-while panels wait to receive new commands, they must also be sending updates regarding the
-state of controls. I couldn't find out how to do this at least not without some extremely
-verbose code, perhaps you Python folks know!
+The panels, separated as they are by the sockets, can easily be in a different language.
+Python has been chosen for familiarity / availability of Raspberry Pi code snippets.
 
 ## Running in production
 
