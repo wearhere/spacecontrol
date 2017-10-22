@@ -31,10 +31,11 @@ server. Press Ctrl-C to kill all the servers.
 
 Visit `http://localhost:3000` in your browser. You will see a glorious "spaceship".
 
-Now, run `python panel.py` in a separate terminal. It will print a message to the console. Let's say
-it says "Defenestrate the aristocracy!" Go find this message within the `controls` list in
-`panel.py`. Type the `id` of the top-level dict containing it, a space, and its key within the
-`actions` dict. In this case you would type "foo 1". Then press enter.
+Now, run `python panel.py 1` in a separate terminal. It will print the list of controls that are
+available, followed by a message. Let's say the message is "Defenestrate the aristocracy!" Go find
+this message within the controls that printed at the top. Type the `id` of the top-level dict
+containing it, a space, and its key within the `actions` dict. In this case you would type
+"defenestrator 1". Then press enter.
 
 You'll see "Nice job", the spaceship will move a little bit across the screen, and you'll get a new
 command to perform as above.
@@ -51,6 +52,14 @@ be pressed (state "1") to "Defenestrate the aristocracy!"
 4. You told the panel to tell the server that the button was pressed (as if you had actually pressed
 a physical button).
 5. Since you performed the command, you caused the spaceship to travel a little bit across the field.
+
+Bonus: try running `python panel.py 2` in _another_ terminal. Now you can play as two players! This
+means that you may need to switch between the terminals to perform the commands! If one terminal
+prints "Defenestrate the aristocracy!" but the list of controls at the top of the terminal didn't
+contain that message, you'll need to enter "defenestrate 1" at the _other_ terminal.
+
+In the real game, this part will involve the first player shouting to the other players to figure
+out who can perform the command.
 
 ## So what's expected of the panels?
 
