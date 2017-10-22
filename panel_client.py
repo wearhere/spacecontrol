@@ -36,22 +36,29 @@ class Client:
   def read(self):
     """returns a message from server, or None"""
     while True:
-      new_data = self._socket.recv(4096)
+      # read and save some data from the socket
+      try:
+        new_data = self._socket.recv(4096)
+        self.read_buffer.append(new_data)
 
-      # stop trying to read if we're not getting anything
-      if len(new_data) == 0:
-        return None
+      # exception handling prevents errors from reading a non-blocking
+      # socket that has no data available
+      except socket.error:
+        new_data = None
 
-      # save what we just got
-      self.read_buffer.append(new_data)
-
-      # do we have a full command? lets return it
-      if '\x00' in new_data:
-        all_read = ''.join(self.read_buffer)
-        msg, remainder = all_read.split('\x00')
+      # do we have a command separator in the buffer? lets return a command!
+      if any([True for part in self.read_buffer if '\x00' in part]):
+        all_data = ''.join(self.read_buffer)
+        msg, remainder = all_data.split('\x00', 1)
         self.read_buffer = [remainder]
 
         return decode(msg)
+
+      # otherwise, decide if we want to continue looping or give up
+      if new_data:
+        continue
+      else:
+        return None
 
     def encode(self, msg):
       """encodes a message to send to the server"""
