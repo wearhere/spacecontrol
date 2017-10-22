@@ -105,6 +105,16 @@ while panels wait to receive new commands, they must also be sending updates reg
 state of controls. I couldn't find out how to do this at least not without some extremely
 verbose code, perhaps you Python folks know!
 
+## Running in production
+
+Both the Node server and the Python panel code will be run on Raspberry Pis, the Python code
+since the control panels need to interface with the controls over serial pins, the Node server
+so that we don't have to leave a laptop lying out to play the game.
+
+The Raspberry Pis will be wired together over local Ethernet to avoid assuming that the game
+venue will have reliable WiFi. The panel scripts (`panel.py`) will be launched with the
+`CONTROLLER_IP` environment variable set to the static IP of the control Pi.
+
 [spaceship control panels]: https://github.com/igor47/spaceboard
 [latest Node]: https://nodejs.org/en/
 
