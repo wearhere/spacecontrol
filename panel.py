@@ -14,8 +14,10 @@ import socket
 # This is a list of all controls monitored by this control panel. As controls
 # connect/disconnect, add and remove from this list, then call `announce` again.
 controls = [{
-  # An identifier for the control. Must be unique per-panel.
-  'id': 'foo',
+  # An identifier for the control. Must be globally unique. This shouldn't be that hard in practice
+  # because players will need to uniquely identify this control among all controls. Just give it a
+  # weird name.
+  'id': 'defenestrator',
 
   # The current state of the control. This should always be a string even if the state is numeric
   # (this is because the keys of `actions` won't be able to be JSON-serialized if numeric).
