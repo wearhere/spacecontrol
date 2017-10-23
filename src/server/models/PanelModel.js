@@ -1,6 +1,5 @@
 const Backbone = require('backbone');
 const ControlCollection = require('./ControlCollection');
-const Cobs = require('cobs');
 
 const PanelModel = Backbone.Model.extend({
   defaults: {
@@ -32,29 +31,40 @@ const PanelModel = Backbone.Model.extend({
   _setUpConnection(connection) {
     connection.setEncoding('utf8');
 
-    // It's not guaranteed that we'll receive the Python `sendall`, i.e. a single JSON-encoded,
-    // carriage-return-delimited blob, in exactly one chunk; we need to expect we might receive more
-    // or less data than that and so buffer the data.
-    const EVENT_DELIMITER = '\x00';
-    let buffer = '';
+    // It's not guaranteed that we'll receive the Python `sendall`, i.e. a
+    // single JSON-encoded message. we need to expect we might receive more or
+    // less data than that and so buffer the data. we expect the first 4 bytes
+    // of data to include the amount of data which will be recieved
+    let buffer = Buffer.alloc(0);
 
     connection.on('data', (chunk) => {
-      buffer += chunk;
+      buffer = Buffer.concat([buffer, Buffer.from(chunk)]);
 
-      let endOfEvent;
-      while ((endOfEvent = buffer.indexOf(EVENT_DELIMITER)) !== -1) {
-        let rawEvent = buffer.substring(0, endOfEvent);
-        buffer = buffer.substring(endOfEvent + EVENT_DELIMITER.length);
+      // parse the data in a loop in case we got multiple messages at once
+      while (true) {
+        // not enough data for a message
+        if (buffer.length < 4) { break; }
 
+        msgLength = buffer.readUInt32BE();
+        msgEnd = 4 + msgLength;
+
+        // not enough data for a complete message
+        if (buffer.length < msgEnd) { break; }
+
+        // extract a message from the buffer
+        msg = buffer.slice(4, msgEnd);
+        buffer = buffer.slice(msgEnd);
+
+        // parse the message json
         let event;
         try {
-          decoded = Cobs.decode(Buffer(rawEvent)).toString();
-          event = JSON.parse(decoded);
+          event = JSON.parse(msg);
         } catch (e) {
-          console.error(`Invalid panel message received: ${chunk}`);
+          console.error(`Invalid panel message received: ${chunk}: ${e}`);
           continue;
         }
 
+        // act on the message
         const { message, data } = event;
         switch (message) {
           case 'announce': {
@@ -101,9 +111,12 @@ const PanelModel = Backbone.Model.extend({
   _send(message, data) {
     if (!this._connection) return; // Connection might have closed.
     const str = JSON.stringify({ message, data });
-    const encoded = Cobs.encode(Buffer(str)).toString()
 
-    this._connection.write(encoded + '\x00');
+    const buffer = Buffer.alloc(4 + str.length);
+    buffer.writeUInt32BE(str.length, 0);
+    buffer.write(str, 4);
+
+    this._connection.write(buffer);
   }
 });
 

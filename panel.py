@@ -120,12 +120,11 @@ def main(args):
 
   try:
     # start socket operations
-    remote = (
-        os.getenv('CONTROLLER_IP', 'localhost'),
-        os.getenv('CONTROLLER_PORT', 8000),
-      )
     c = Client()
-    c.connect(remote)
+    c.connect(
+        host = os.getenv('CONTROLLER_IP', 'localhost'),
+        port = os.getenv('CONTROLLER_PORT', 8000)
+      )
 
     c.send('announce', { 'controls': controls })
 
