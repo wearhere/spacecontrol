@@ -16,11 +16,12 @@ MIN_LATENCY_MS = 10
 
 
 class PanelStateBase:
+
   def get_state_updates(self):
     """Must implement this function for your panel.
 
-    Should return an iterable of key, values for anything that has changed since
-    the last call.
+    Should return an iterable of key, value pairs for anything that has changed
+    since the last call, or of the complete state.
     """
     raise NotImplementedError()
 
@@ -36,66 +37,66 @@ class PanelStateBase:
 
     Display a message from the server for the user."""
 
-def _panel_io_subprocess_main(panel_state, action_queue, message_queue):
+
+def _make_update_message(update):
+  return {'message': 'set-state', 'data': {'id': update[0], 'state': update[1]}}
+
+def _make_announce_message(controls):
+  return {'message': 'announce', 'data': controls}
+
+
+def _panel_io_subprocess_main(panel_state_class, action_queue, message_queue):
+  panel_state = panel_state_class()
+  action_queue.put(_make_announce_message(panel_state.get_controls()))
+
   while True:
     for update in panel_state.get_state_updates():
       if update is None:
         # received shutdown signal
-        break;
-      action_queue.put(update)
+        break
+      action_queue.put(_make_update_message(update))
     try:
       panel_state.display_message(message_queue.get())
     except EmptyQueueException:
       pass
-    time.sleep(MIN_LATENCY_MS/1000)
+    time.sleep(MIN_LATENCY_MS / 1000)
 
 
-def _server_io_subprocess_main(messenger, action_queue, message_queue):
+def _server_io_subprocess_main(action_queue, message_queue, socket=socket):
+  messenger = SpaceTeamMessenger(socket)
   while True:
     try:
       action = action_queue.get()
       if action is None:
         # received shutdown signal
-        break;
-      messenger.send_state_update(action)
+        break
+      messenger.send(action)
     except EmptyQueueException:
       pass
     for message in messenger.get_messages():
       if message['message'] == 'display':
         message_queue.put(message['data']['display'])
-    time.sleep(MIN_LATENCY_MS/1000)
+    time.sleep(MIN_LATENCY_MS / 1000)
 
 
 class PanelClient:
   """Handles communication with the server and polling state updates."""
 
   def __init__(self, PanelStateClass):
-    """Open socket, send setup message to server.."""
-
-  # Connect to controller and appraise it of our controls.
-  # Make the connection non-blocking _after_ connecting to avoid this nonsense:
-  # https://stackoverflow.com/a/6206705/495611
-  self._socket = socket._socketet()
-  self._socket.connect(('localhost', os.getenv('CONTROLLER_PORT', 8000)))
-  self._socket.setblocking(0)
-  self._messenger = SpaceTeamMessenger(self._socket)
-
-  self._action_queue = multiprocessing.Queue()
-  self._message_queue = multiprocessing.Queue()
-
-  self._panel_state = PanelStateClass()
-  self._send_message('announce', {'conrols': self._panel_state.get_controls()})
+    self._action_queue = multiprocessing.Queue()
+    self._message_queue = multiprocessing.Queue()
+    self._panel_state_class = PanelStateClass
 
   def start(self):
     """Start I/O subprocess and begin communicating with server."""
     self._panel_io_subprocess = multiprocessing.Process(
         target=_panel_io_subprocess_main,
-        args=(self._panel_state, self._action_queue, self._message_queue))
+        args=(seld._panel_state_class, self._action_queue, self._message_queue))
     self._panel_io_subprocess.start()
 
     self._server_io_subprocess = multiprocessing.Process(
         target=_server_io_subprocess_main,
-        args=(self._messenger, self._action_queue, self._message_queue))
+        args=(self._action_queue, self._message_queue))
     self._server_io_subprocess.start()
 
   def stop(self):
@@ -103,12 +104,16 @@ class PanelClient:
     self._message_queue.put(None)
 
 
-
-
 class SpaceTeamMessenger:
   """Handles reading and deserializing messages from the server"""
+
   def __init___(self, socket):
-    self._socket = socket
+    # Connect to controller and appraise it of our controls.
+    # Make the connection non-blocking _after_ connecting to avoid this nonsense:
+    # https://stackoverflow.com/a/6206705/495611
+    self._socket = socket.socket()
+    self._socket.connect(('localhost', os.getenv('CONTROLLER_PORT', 8000)))
+    self._socket.setblocking(0)
     self._msg_buffer = ''
 
   def get_messages(self):
@@ -129,6 +134,5 @@ class SpaceTeamMessenger:
     except socket.error:
       return []
 
-
-  def send_message(self, message, data):
-    self.socket.sendall(json.dumps({ "message": message, "data": data }) + '\r')
+  def send(self, message):
+    self.socket.sendall(json.dumps(message))
