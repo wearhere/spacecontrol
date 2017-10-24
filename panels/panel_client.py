@@ -14,14 +14,23 @@ import time
 # Polling interval of the IO process
 MIN_LATENCY_MS = 10
 
+# characer that delimits socket messages
+DELIMITER_CHAR = '\r'
+
 
 class PanelStateBase:
+
+  def diff_states(old_state, new_state):
+    return {
+        k:v for k in new_state.iteritems()
+        if (k not in old_state) or (v != old_state[k])
+    }
 
   def get_state_updates(self):
     """Must implement this function for your panel.
 
-    Should return an iterable of key, value pairs for anything that has changed
-    since the last call, or of the complete state.
+    Should return an iterable of control_id, state pairs for anything that has
+    changed since the last call, or of the complete state.
     """
     raise NotImplementedError()
 
@@ -41,19 +50,20 @@ class PanelStateBase:
 def _make_update_message(update):
   return {'message': 'set-state', 'data': {'id': update[0], 'state': update[1]}}
 
+
 def _make_announce_message(controls):
   return {'message': 'announce', 'data': controls}
 
 
-def _panel_io_subprocess_main(panel_state_class, action_queue, message_queue):
-  panel_state = panel_state_class()
+def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue):
+  panel_state = panel_state_factory()
   action_queue.put(_make_announce_message(panel_state.get_controls()))
 
   while True:
     for update in panel_state.get_state_updates():
       if update is None:
         # received shutdown signal
-        break
+        return
       action_queue.put(_make_update_message(update))
     try:
       panel_state.display_message(message_queue.get())
@@ -62,14 +72,17 @@ def _panel_io_subprocess_main(panel_state_class, action_queue, message_queue):
     time.sleep(MIN_LATENCY_MS / 1000)
 
 
-def _server_io_subprocess_main(action_queue, message_queue, socket=socket):
-  messenger = SpaceTeamMessenger(socket)
+def _server_io_subprocess_main(
+    action_queue,
+    message_queue,
+    messenger_factory=lambda: SpaceTeamMessenger(socket.socket)):
+  messenger = messenger_factory()
   while True:
     try:
       action = action_queue.get()
       if action is None:
         # received shutdown signal
-        break
+        return
       messenger.send(action)
     except EmptyQueueException:
       pass
@@ -82,16 +95,16 @@ def _server_io_subprocess_main(action_queue, message_queue, socket=socket):
 class PanelClient:
   """Handles communication with the server and polling state updates."""
 
-  def __init__(self, PanelStateClass):
+  def __init__(self, panel_state_factory):
     self._action_queue = multiprocessing.Queue()
     self._message_queue = multiprocessing.Queue()
-    self._panel_state_class = PanelStateClass
+    self._panel_state_factory = panel_state_factory
 
   def start(self):
     """Start I/O subprocess and begin communicating with server."""
     self._panel_io_subprocess = multiprocessing.Process(
         target=_panel_io_subprocess_main,
-        args=(seld._panel_state_class, self._action_queue, self._message_queue))
+        args=(self._panel_state_factory, self._action_queue, self._message_queue))
     self._panel_io_subprocess.start()
 
     self._server_io_subprocess = multiprocessing.Process(
@@ -107,21 +120,29 @@ class PanelClient:
 class SpaceTeamMessenger:
   """Handles reading and deserializing messages from the server"""
 
-  def __init___(self, socket):
+  def __init__(self, socket_class, delimiter_char=DELIMITER_CHAR):
     # Connect to controller and appraise it of our controls.
     # Make the connection non-blocking _after_ connecting to avoid this nonsense:
     # https://stackoverflow.com/a/6206705/495611
-    self._socket = socket.socket()
+    self._socket = socket_class()
     self._socket.connect(('localhost', os.getenv('CONTROLLER_PORT', 8000)))
     self._socket.setblocking(0)
     self._msg_buffer = ''
+    self._delimiter_char = delimiter_char
+
+  def peek_buffer(self):
+    return self._msg_buffer
+
+  def get_delimiter(self):
+    return self._delimiter_char
 
   def get_messages(self):
     """Yields all available messages."""
     try:
       self._msg_buffer += self._socket.recv(4096)
-      while msg_buffer:
-        msg, delimiter, self._msg_buffer = self._msg_buffer.partition('\r')
+      while self._msg_buffer:
+        msg, delimiter, self._msg_buffer = self._msg_buffer.partition(
+            self._delimiter_char)
         if not delimiter:
           # message is incomplete
           self._msg_buffer = msg
@@ -132,7 +153,8 @@ class SpaceTeamMessenger:
           # malformed message
           continue
     except socket.error:
-      return []
+      return
 
   def send(self, message):
     self.socket.sendall(json.dumps(message))
+    self.socket.sendall(self._delimiter_char)
