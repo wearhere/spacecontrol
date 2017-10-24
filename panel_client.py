@@ -30,7 +30,7 @@ class Client:
       'message': message,
       'data': data,
       })
-
+    print("Message: {}".format(msg))
     self._socket.sendall(msg)
 
   def read(self):

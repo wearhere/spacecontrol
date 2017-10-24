@@ -57,7 +57,7 @@ controls = [{
 
     # HACK(jeff): `'type': 'button'` is only present to be able to play the game via the CLI, see
     # where this is read at the bottom of this script.
-  'type': 'button',
+  'type': 'switch',
 }, {
   'id': 'octo',
 
@@ -69,7 +69,7 @@ controls = [{
     'mouth': 'Octo kiss raven girl mouth!'
   },
 
-  'type': 'button'
+  'type': 'switch'
 }, {
   'id': 'Froomulator',
 

@@ -8,6 +8,7 @@ import multiprocessing
 from Queue import Empty as EmptyQueueException
 import os
 import socket
+import struct
 import sys
 import time
 
@@ -52,7 +53,7 @@ def _make_update_message(update):
 
 
 def _make_announce_message(controls):
-  return {'message': 'announce', 'data': controls}
+  return {'message': 'announce', 'data': {'controls':controls}}
 
 
 def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue):
@@ -63,10 +64,11 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue):
     for update in panel_state.get_state_updates():
       if update is None:
         # received shutdown signal
+        print("Bye-bye!")
         return
       action_queue.put(_make_update_message(update))
     try:
-      panel_state.display_message(message_queue.get())
+      panel_state.display_message(message_queue.get(block=False))
     except EmptyQueueException:
       pass
     time.sleep(MIN_LATENCY_MS / 1000)
@@ -79,7 +81,7 @@ def _server_io_subprocess_main(
   messenger = messenger_factory()
   while True:
     try:
-      action = action_queue.get()
+      action = action_queue.get(block=False)
       if action is None:
         # received shutdown signal
         return
@@ -89,7 +91,7 @@ def _server_io_subprocess_main(
     for message in messenger.get_messages():
       if message['message'] == 'display':
         message_queue.put(message['data']['display'])
-    time.sleep(MIN_LATENCY_MS / 1000)
+    #time.sleep(MIN_LATENCY_MS / 1000)
 
 
 class PanelClient:
@@ -120,12 +122,13 @@ class PanelClient:
 class SpaceTeamMessenger:
   """Handles reading and deserializing messages from the server"""
 
-  def __init__(self, socket_class, delimiter_char=DELIMITER_CHAR):
+  def __init__(self, socket_class, delimiter_char=DELIMITER_CHAR,
+               controller_port=8000):
     # Connect to controller and appraise it of our controls.
     # Make the connection non-blocking _after_ connecting to avoid this nonsense:
     # https://stackoverflow.com/a/6206705/495611
-    self._socket = socket_class()
-    self._socket.connect(('localhost', os.getenv('CONTROLLER_PORT', 8000)))
+    self._socket = socket_class(socket.AF_INET, socket.SOCK_STREAM)
+    self._socket.connect(('localhost', controller_port))
     self._socket.setblocking(0)
     self._msg_buffer = ''
     self._delimiter_char = delimiter_char
@@ -133,28 +136,35 @@ class SpaceTeamMessenger:
   def peek_buffer(self):
     return self._msg_buffer
 
-  def get_delimiter(self):
-    return self._delimiter_char
-
   def get_messages(self):
     """Yields all available messages."""
     try:
       self._msg_buffer += self._socket.recv(4096)
-      while self._msg_buffer:
-        msg, delimiter, self._msg_buffer = self._msg_buffer.partition(
-            self._delimiter_char)
-        if not delimiter:
-          # message is incomplete
-          self._msg_buffer = msg
-          break
-        try:
-          yield json.loads(msg)
-        except ValueError:
-          # malformed message
-          continue
+      while len(self._msg_buffer) >= 4:
+        message = self._pop_from_buffer()
+        if message:
+          yield message
+        else:
+          return
+
     except socket.error:
       return
 
+  def _pop_from_buffer(self):
+    msg_length = struct.unpack('>I', self._msg_buffer[:4])[0]
+    if len(self._msg_buffer) < (4 + msg_length):
+      return None
+
+    # okay, we have a complete message! lets return it!
+    msg_ends_at = 4 + msg_length
+    msg = self._msg_buffer[4:msg_ends_at]
+    self._msg_buffer = self._msg_buffer[msg_ends_at:]
+
+    return json.loads(msg)
+
+  def _encode(self, message):
+    jstr = json.dumps(message)
+    return struct.pack('>I%ds' % len(jstr), len(jstr), jstr)
+    
   def send(self, message):
-    self.socket.sendall(json.dumps(message))
-    self.socket.sendall(self._delimiter_char)
+    self._socket.sendall(self._encode(message))
