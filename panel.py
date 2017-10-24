@@ -6,6 +6,8 @@ import sys
 import threading
 import time
 
+from panel_client import Client
+
 # A control is any object that the player can manipulate to put in one or more states. A control can
 # be anything from a button to a switch to a dial to a pair of dolls that you touch against each
 # other.
@@ -82,126 +84,101 @@ controls = [{
   ]
 }]
 
-# HACK(jeff): Multiple panels can't have the same controls. So when playing via the CLI, we divvy
-# up the controls between players.
-if len(sys.argv) < 2:
-  print 'Enter player number (1 or 2).'
-  exit(1)
-
-player_number = int(sys.argv[1])
-if player_number is 1:
-  controls = controls[:2]
-elif player_number is 2:
-  controls = controls[2:]
-else:
-  # To add more players, just add some more controls to the list above so that we have more to divvy up.
-  print 'Game only supports two players atm.'
-  exit(1)
-
-print 'Your controls are: ', json.dumps(controls, indent=2)
-
-
-# Connect to controller and apprise it of our controls.
-# Make the connection non-blocking _after_ connecting to avoid this nonsense:
-# https://stackoverflow.com/a/6206705/495611
-sock = socket.socket()
-sock.connect((os.getenv('CONTROLLER_IP', 'localhost'), os.getenv('CONTROLLER_PORT', 8000)))
-sock.setblocking(0)
-
-def send(message, data):
-  sock.sendall(json.dumps({ "message": message, "data": data }) + '\r')
-
-def announce():
-  send("announce", { "controls": controls })
-
-announce()
-
-
-# Handle events from controls and the controller.
 
 # Mimic controls changing by the player entering keyboard input.
 # Use a thread to allow blocking reads thereof.
-
 control_queue = []
+should_exit = False
 def readKeyboard():
-  while (True):
+  print "reading keyboard"
+  while not should_exit:
     control_id, space, state = raw_input().partition(' ')
     if control_id and state:
       control_queue.append((control_id, state))
-threading.Thread(target=readKeyboard).start()
 
-def receiveControl():
+def main(args):
+  global controls, should_exit
+
+  # HACK(jeff): Multiple panels can't have the same controls. So when playing
+  # via the CLI, we divvy up the controls between players.
+  if len(args) < 1:
+    print 'Enter player number (1 or 2).'
+    return 1
+
+  player_number = int(args[0])
+  if player_number is 1:
+    controls = controls[:2]
+  elif player_number is 2:
+    controls = controls[2:]
+  else:
+    # To add more players, just add some more controls to the list above so
+    # that we have more to divvy up.
+    print 'Game only supports two players atm.'
+    return 2
+
+  print 'Your controls are: ', json.dumps(controls, indent=2)
+
   try:
-    state_change = control_queue.pop(0) # Pops from start of list.
-  except:
-    # Ignore the queue being empty.
-    return False
+    # start socket operations
+    c = Client()
+    c.connect(
+        host = os.getenv('CONTROLLER_IP', 'localhost'),
+        port = os.getenv('CONTROLLER_PORT', 8000)
+      )
 
-  control_id, state = state_change
+    c.send('announce', { 'controls': controls })
 
-  try:
-    control = filter(lambda c: c['id'] == control_id, controls)[0]
-  except:
-    # The player entered invalid input like trying to manipulate a control that wasn't on their board.
-    return False
+    # start reading keyboard
+    keyboard_reader = threading.Thread(target=readKeyboard)
+    keyboard_reader.start()
 
-  send('set-state', { 'id': control_id, 'state': state })
+    # main loop
+    while True:
+      # read events from the network
+      event = c.read()
+      if event is not None:
+        if event['message'] == 'display':
+          display = event['data']['display']
+          print '> ' + display
 
-  # HACK(jeff): We need to explicitly reset buttons' state while playing from the CLI, whereas a
-  # physical button's state would automatically reset when the player lifted their finger off.
-  if ('type' in control) and (control['type'] == 'button'):
-    send('set-state', { 'id': control_id, 'state': '0' })
-
-  return True
-
-buffer = ''
-def receiveController():
-  global buffer
-
-  while True:
-    try:
-      data = sock.recv(4096) # Arbitrary / maximum length.
-    except:
-      # If the buffer is empty, we return as not having handled an event.
-      # Otherwise we wait for the rest of the data corresponding to this event.
-      if not buffer:
-        return False
-      else:
-        continue
-
-    buffer += data
-
-    # Note that we may receive multiple events at once.
-    while buffer:
-      raw_event, carriage_return, following_text = buffer.partition('\r')
+      # handle local events
       try:
-        event = json.loads(raw_event)
+        control_id, state = control_queue.pop(0)
       except:
-        # We didn't receive a complet message.
-        buffer = raw_event
-        break
+        pass
+      else:
+        try:
+          control = filter(lambda c: c['id'] == control_id, controls)[0]
+        except:
+          print "no controls with control_id %s" % control_id
+        else:
+          c.send('set-state', { 'id': control_id, 'state': state })
 
-      if event['message'] == 'display':
-        display = event['data']['display']
-        print '> ' + display
+          # HACK(jeff): We need to explicitly reset buttons' state while
+          # playing from the CLI, whereas a physical button's state would
+          # automatically reset when the player lifted their finger off.
+          if ('type' in control) and (control['type'] == 'button'):
+            c.send('set-state', { 'id': control_id, 'state': '0' })
 
-      # Resume processing the text after the message--possibly another event.
-      buffer = following_text
+      # Wait for an event to occur.
+      time.sleep(0.1)
+  except KeyboardInterrupt:
+    return 0
+  finally:
+    if c:
+      c.stop()
 
-  return True
-
+    should_exit = True
+    # TODO: we cannot do this because we use an un-timed-out raw_input
+    # so the keyboard reader thread is stuck, and cannot check it's flag
+    # we need to just read from stdin there, instead of using buffered reads
+    #if keyboard_reader:
+    #  keyboard_reader.join()
 
 # Play the game.
-try:
-  while (True):
-    for receiver in [receiveControl, receiveController]:
-      if receiver():
-        continue
-
-    # Wait for an event to occur.
-    time.sleep(0.1)
-except KeyboardInterrupt:
+if __name__ == "__main__":
   # Kill all threads: https://stackoverflow.com/a/1635089/495611
-  os._exit(0)
+  os._exit(main(sys.argv[1:]))
 
-# `sock` will automatically close when the script finishes or is terminated.
+  # TODO: is this okay? we should probably handle thread cleanup ourselves...
+  # sys.exit(main(sys.argv[1:]))
