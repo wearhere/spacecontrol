@@ -60,24 +60,28 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue):
   panel_state = panel_state_factory()
   action_queue.put(_make_announce_message(panel_state.get_controls()))
 
-  if getattr(panel_state, 'panel_main', False):
-    panel_state.panel_main(action_queue, message_queue)
-    return
-  
-  while True:
-    # TODO: add support for the panel to update available controls
-    for update in panel_state.get_state_updates():
-      if update is None:
-        # received shutdown signal
-        return
-      action_queue.put(_make_update_message(update))
-    try:
-      message = message_queue.get(block=False)
-      if message['message'] == 'display':
-        panel_state.display_message(message['data']['display'])
-    except EmptyQueueException:
-      pass
-    time.sleep(MIN_LATENCY_MS / 1000)
+  try:
+    if getattr(panel_state, 'panel_main', False):
+      panel_state.panel_main(action_queue, message_queue)
+      return
+
+    while True:
+      # TODO: add support for the panel to update available controls
+      for update in panel_state.get_state_updates():
+        if update is None:
+          # received shutdown signal
+          return
+        action_queue.put(_make_update_message(update))
+      try:
+        message = message_queue.get(block=False)
+        if message['message'] == 'display':
+          panel_state.display_message(message['data']['display'])
+      except EmptyQueueException:
+        pass
+      time.sleep(MIN_LATENCY_MS / 1000)
+  except KeyboardInterrupt:
+    # Ignore keyboard interrupts since `run_panel` will register a handler and stop the client.
+    pass
 
 
 def _server_io_subprocess_main(
@@ -85,18 +89,23 @@ def _server_io_subprocess_main(
     message_queue,
     messenger_factory=lambda: SpaceTeamMessenger(socket.socket)):
   messenger = messenger_factory()
-  while True:
-    try:
-      action = action_queue.get(block=False)
-      if action is None:
-        # received shutdown signal
-        return
-      messenger.send(action)
-    except EmptyQueueException:
-      pass
-    for message in messenger.get_messages():
-      message_queue.put(message)
-    #time.sleep(MIN_LATENCY_MS / 1000)
+
+  try:
+    while True:
+      try:
+        action = action_queue.get(block=False)
+        if action is None:
+          # received shutdown signal
+          return
+        messenger.send(action)
+      except EmptyQueueException:
+        pass
+      for message in messenger.get_messages():
+        message_queue.put(message)
+      #time.sleep(MIN_LATENCY_MS / 1000)
+  except KeyboardInterrupt:
+    # Ignore keyboard interrupts since `run_panel` will register a handler and stop the client.
+    pass
 
 
 class PanelClient:
@@ -122,6 +131,9 @@ class PanelClient:
   def stop(self):
     self._action_queue.put(None)
     self._message_queue.put(None)
+
+    self._panel_io_subprocess.join()
+    self._server_io_subprocess.join()
 
 
 class SpaceTeamMessenger:
