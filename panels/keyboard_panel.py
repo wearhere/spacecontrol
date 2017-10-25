@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
 import Queue
 import select
 import threading
@@ -109,7 +110,7 @@ class KeyboardPanel(PanelStateBase):
     self.kbd_thread = threading.Thread(
         target=poll_keyboard, args=(self.stop_event, self.input_queue, stdin))
     self.controls = CONTROL_SCHEMES[player_number - 1]
-    self.display_message('Conrol scheme: {}'.format(self.controls))
+    self.display_message('Control scheme: {}'.format(json.dumps(self.controls, indent=2)))
     self.kbd_thread.start()
 
   def is_button(self, item):
