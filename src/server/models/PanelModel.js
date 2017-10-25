@@ -29,8 +29,6 @@ const PanelModel = Backbone.Model.extend({
   },
 
   _setUpConnection(connection) {
-    connection.setEncoding('utf8');
-
     // It's not guaranteed that we'll receive the Python `sendall`, i.e. a
     // single JSON-encoded message. we need to expect we might receive more or
     // less data than that and so buffer the data. we expect the first 4 bytes
@@ -38,21 +36,19 @@ const PanelModel = Backbone.Model.extend({
     let buffer = Buffer.alloc(0);
 
     connection.on('data', (chunk) => {
-      buffer = Buffer.concat([buffer, Buffer.from(chunk)]);
+      buffer = Buffer.concat([buffer, chunk]);
 
-      // parse the data in a loop in case we got multiple messages at once
-      while (true) {
-        // not enough data for a message
-        if (buffer.length < 4) { break; }
-
-        msgLength = buffer.readUInt32BE();
-        msgEnd = 4 + msgLength;
+      // Parse the data in a loop in case we got multiple messages at once.
+      // We need at least 4 bytes for a message.
+      while (buffer.length >= 4) {
+        const msgLength = buffer.readUInt32BE();
+        const msgEnd = 4 + msgLength;
 
         // not enough data for a complete message
-        if (buffer.length < msgEnd) { break; }
+        if (buffer.length < msgEnd) break;
 
         // extract a message from the buffer
-        msg = buffer.slice(4, msgEnd);
+        const msg = buffer.slice(4, msgEnd).toString();
         buffer = buffer.slice(msgEnd);
 
         // parse the message json

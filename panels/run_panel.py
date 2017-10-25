@@ -11,6 +11,7 @@ import keyboard_panel
 from panel_client import PanelClient
 
 import os
+import signal
 import sys
 
 
@@ -42,6 +43,12 @@ def main():
   client = PanelClient(panel_class)
 
   client.start()
+
+  def signal_handler(signal, frame):
+    client.stop()
+    sys.exit(0)
+
+  signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
   main()
