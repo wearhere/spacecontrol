@@ -48,7 +48,7 @@ const PanelModel = Backbone.Model.extend({
         if (buffer.length < msgEnd) break;
 
         // extract a message from the buffer
-        const msg = buffer.slice(4, msgEnd);
+        const msg = buffer.slice(4, msgEnd).toString();
         buffer = buffer.slice(msgEnd);
 
         // parse the message json
