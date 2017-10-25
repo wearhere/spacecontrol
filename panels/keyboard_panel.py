@@ -143,8 +143,8 @@ class KeyboardPanel(PanelStateBase):
     return self.controls
 
   def display_message(self, message):
-    """Prints the message."""
-    print(message)
+    """Prints the message with a prefix (to differentiate it from what the user types)."""
+    print('> ' + message)
 
   def __del__(self):
     self.stop_event.set()
