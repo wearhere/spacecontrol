@@ -12,6 +12,9 @@ import struct
 import sys
 import time
 
+# Time to wait for panel IO to start
+PANEL_IO_START_SECONDS = 2
+
 # Polling interval of the IO process
 MIN_LATENCY_MS = 10
 
@@ -48,6 +51,50 @@ class PanelStateBase:
     Display a message from the server for the user."""
 
 
+def _validate_controls(controls):
+  assert isinstance(controls, list), 'Controls is not a list'
+
+  for control in controls:
+    try:
+      for attr in ['id', 'state', 'actions']:
+        assert attr in control, '`{}` is missing'.format(attr)
+
+      assert isinstance(control['id'], str), '`id` is not a string'
+
+      assert isinstance(control['state'], str), '`state` is not a string'
+
+      if isinstance(control['actions'], dict):
+        states = control['actions'].keys()
+        assert all([isinstance(state, str) for state in states]), 'State in `actions` is not a string'
+
+        actions = control['actions'].values()
+        for action in actions:
+          assert isinstance(action, str), 'Values of `actions` must be strings'
+          assert '%s' not in action, 'Format strings are only supported in the shorthand form of `actions`'
+
+        assert control['state'] in states, '`state` not present in `actions`'
+
+      elif isinstance(control['actions'], list):
+        assert len(control['actions']) == 2, 'Shorthand `actions` is malformed'
+
+        states = control['actions'][0]
+        assert isinstance(states, list), 'Shorthand `actions` is malformed'
+        assert all([isinstance(state, str) for state in states]), 'State in `actions` is not a string'
+
+        action = control['actions'][1]
+        assert isinstance(action, str) and '%s' in action, 'Shorthand `actions` is malformed'
+
+        assert control['state'] in states, '`state` not present in `actions`'
+
+      else:
+        raise TypeError('`actions` is malformed')
+
+    except Exception as e:
+      raise TypeError('{} failed validation: {}'.format(control, e))
+
+  assert len(set([control['id'] for control in controls])) == len(controls), 'Control ids are not unique'
+
+
 def _make_update_message(update):
   return {'message': 'set-state', 'data': {'id': update[0], 'state': update[1]}}
 
@@ -56,9 +103,18 @@ def _make_announce_message(controls):
   return {'message': 'announce', 'data': {'controls':controls}}
 
 
-def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue):
+def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, panel_io_started):
   panel_state = panel_state_factory()
-  action_queue.put(_make_announce_message(panel_state.get_controls()))
+  controls = panel_state.get_controls()
+
+  try:
+    _validate_controls(controls)
+  except Exception as e:
+    print(e)
+    return
+
+  action_queue.put(_make_announce_message(controls))
+  panel_io_started.set()
 
   try:
     if getattr(panel_state, 'panel_main', False):
@@ -114,14 +170,26 @@ class PanelClient:
   def __init__(self, panel_state_factory):
     self._action_queue = multiprocessing.Queue()
     self._message_queue = multiprocessing.Queue()
+    self._panel_io_started = multiprocessing.Event()
     self._panel_state_factory = panel_state_factory
 
   def start(self):
     """Start I/O subprocess and begin communicating with server."""
     self._panel_io_subprocess = multiprocessing.Process(
         target=_panel_io_subprocess_main,
-        args=(self._panel_state_factory, self._action_queue, self._message_queue))
+        args=(self._panel_state_factory, self._action_queue, self._message_queue,
+              self._panel_io_started))
     self._panel_io_subprocess.start()
+
+    # Wait for panel IO to start.
+    panel_io_start_time = time.time()
+    while not self._panel_io_started.is_set():
+      if not self._panel_io_subprocess.is_alive() or \
+        (time.time() - panel_io_start_time) > PANEL_IO_START_SECONDS:
+        print('Could not start panel IO; aborting.')
+        sys.exit(1)
+        return # For the purposes of unit tests.
+      time.sleep(0.025)
 
     self._server_io_subprocess = multiprocessing.Process(
         target=_server_io_subprocess_main,
