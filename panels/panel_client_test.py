@@ -73,6 +73,9 @@ class TestIOSubprocesses(unittest.TestCase):
 
   def test_panel_io(self):
     panel_state = mock.Mock()
+    # Since this is a mock, it'll respond to the `getattr('panel_main')` call as if this actually
+    # defined it, so we must explicitly suppress the check.
+    panel_state.panel_main = False
     updates = [[update] for update in zip('abcedf', (x for x in range(6)))]
     panel_state.get_state_updates.side_effect = it.chain(updates, [[None]])
 
