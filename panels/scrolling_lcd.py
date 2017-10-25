@@ -1,4 +1,5 @@
 import Adafruit_CharLCD as LCD
+from time import sleep
 
 DEFAULT_RS_PIN        = 27
 DEFAULT_EN_PIN        = 22
@@ -25,26 +26,30 @@ class ScrollingLCD:
                  d6_pin = DEFAULT_D6_PIN,
                  d7_pin = DEFAULT_D7_PIN,
                  backlight_pin = DEFAULT_BACKLIGHT_PIN):
-        self._lcd = LCD(rs_pin, en_pin, d4_pin, d5_pin, d6_pin, d7_pin, backlight_pin)
-        self._buffer = ''
+        self._lcd = LCD.Adafruit_CharLCD(rs_pin, en_pin, d4_pin, d5_pin, d6_pin, d7_pin, num_cols, num_rows, backlight_pin)
+        self._lines = []
         self._num_rows = num_rows
         self._num_cols = num_cols
         self._num_chars = num_rows*num_cols
 
     def display(self, message):
-        self.add_text(message)
-        self._lcd.message(self._buffer)
+        self._add_text(message)
+        self._lcd.clear()
+        self._lcd.message('\n'.join(self._lines))
 
     def _add_text(self, message):
         lines = message.split('\n')
-        self._buffer = (self._buffer + 
-                        ''.join(line + ' ' * ((self._num_cols - len(line)) % self._num_cols)
-                                for line in lines))
-        self._buffer = self._buffer[:-self._num_chars]
+        message_padded = ''.join(line + ' ' * ((self._num_cols - len(line)) % self._num_cols)
+                                for line in lines)
+        while message_padded:
+            self._lines.append(message_padded[:self._num_cols])
+            message_padded = message_padded[self._num_cols:]
+        self._lines = self._lines[-self._num_rows:]
             
                 
-        
-# Print a two line message
-lcd.message('Hello\nworld!')
-
-
+if __name__ == '__main__':
+    #do a short test/demo
+    lcd = ScrollingLCD()
+    for x in range(10):
+        lcd.display("This is line {}".format(x))
+        sleep(0.5)
