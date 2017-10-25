@@ -31,7 +31,7 @@ server. Press Ctrl-C to kill all the servers.
 
 Visit `http://localhost:3000` in your browser. You will see a glorious "spaceship".
 
-Now, run `python panel.py 1` in a separate terminal. It will print the list of controls that are
+Now, run `python panels/run_panel.py` in a separate terminal. It will print the list of controls that are
 available, followed by a message. Let's say the message is "Defenestrate the aristocracy!" Go find
 this message within the controls that printed at the top. Type the `id` of the top-level dict
 containing it, a space, and its key within the `actions` dict. In this case you would type
@@ -53,7 +53,7 @@ be pressed (state "1") to "Defenestrate the aristocracy!"
 a physical button).
 5. Since you performed the command, you caused the spaceship to travel a little bit across the field.
 
-Bonus: try running `python panel.py 2` in _another_ terminal. Now you can play as two players! This
+Bonus: try running `python panels/run_panel.py --player_number 2` in _another_ terminal. Now you can play as two players! This
 means that you may need to switch between the terminals to perform the commands! If one terminal
 prints "Defenestrate the aristocracy!" but the list of controls at the top of the terminal didn't
 contain that message, you'll need to enter "defenestrate 1" at the _other_ terminal.
@@ -63,16 +63,32 @@ out who can perform the command.
 
 ## So what's expected of the panels?
 
-They should open socket connections to `localhost:8000` and communicate with the server by sending
-JSON-encoding data of the below format, plus a carriage return:
+Panel code can be found in the panels/ directory
+
+### Simple panel setup:
+The quickes way to get started is to extend PanelStateBase. Refer to keyboard_panel.py for an example.
+There are three functions you must implement:
+`get_state_updates` - should return any changes to panel state since the last call to this function. (hint: consider using PanelStateBase.diff_states).
+`get_controls` - should return the panel's available controls.
+`display_message` - show the message to the user. 
+
+You can instead define a `panel_main` method if you prefer. 
+
+### In-depth/roll your own
+
+Panels should open socket connections to `localhost:8000` and communicate with the server by sending
+JSON-encoding data. The beginning of a message should contain a four byte integer: this is the length
+of the message. 
 
 ```
-{ "message": "a string", "data": <any JSON-serializable data> } + "\r"
+{ "message": "a string", "data": <any JSON-serializable data> } 
 ```
+
+See `panel_client._encode()` for an example. 
 
 They should maintain a list of the controls attached to the panel, in the format shown
-at the top of `panel.py`. They should update this list as controls connect/disconnect, and
-call `announce` each time after updating the list. This will cause the server to recalculate
+at the top of `keyboard_panel.py`. If your panel can detect controls going up/down, then it should 
+call `announce` each time available controls change. This will cause the server to recalculate
 what commands are available to it.
 
 (This means that we won't have to babysit this setup, it can cope with controls or even
@@ -86,6 +102,8 @@ When a control is manipulated, the panel should send an event like
 ```
 { "message": "set-state", "data": { "id": <the ID of the control that changed>, "state": <the control's new state> } }
 ```
+
+See `panel_client._make_update_message()`
 
 ## Questions or concerns?
 

@@ -29,6 +29,9 @@ class PanelStateBase:
 
     Should return an iterable of control_id, state pairs for anything that has
     changed since the last call.
+
+    Alternatively, if you would like to manually handle messages, you can
+    implement panel_main(action_queue, message_queue)
     """
     raise NotImplementedError()
 
@@ -57,6 +60,10 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue):
   panel_state = panel_state_factory()
   action_queue.put(_make_announce_message(panel_state.get_controls()))
 
+  if getattr(panel_state, 'panel_main', False):
+    panel_state.panel_main(action_queue, message_queue)
+    return
+  
   while True:
     # TODO: add support for the panel to update available controls
     for update in panel_state.get_state_updates():
