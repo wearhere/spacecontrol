@@ -80,8 +80,7 @@ CONTROL_SCHEMES = [
         # This is a shorthand form of `states`, where the first value (the array) contains the values for
         # `state`, and the second value (the string) is a "template action": the actual actions for each
         # state will be formed by replacing "%s" with the state.
-        'actions': [['0', '1', '2'], 'Set Froomulator to %s!'],
-        'type': 'switch'
+        'actions': [['0', '1', '2'], 'Set Froomulator to %s!']
     }]
 ]
 
