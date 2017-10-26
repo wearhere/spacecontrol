@@ -16,6 +16,7 @@ webServer.listen(WEB_PORT, function() {
 });
 
 const PANEL_PORT = process.env.PANEL_PORT || 8000;
-panelServer.listen(PANEL_PORT, () => {
+//panelServer.listen(PANEL_PORT, () => {
+panelServer.listen(80,'192.168.1.254', () => {
   console.log(`Panel server listening on port ${PANEL_PORT}…`);
 });

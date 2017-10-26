@@ -15,13 +15,13 @@ import time
 # Polling interval of the IO process
 MIN_LATENCY_MS = 10
 
+CONTROLLER_IP = "192.168.1.254"
 
 class PanelStateBase:
 
-  def diff_states(old_state, new_state):
+  def diff_states(self, old_state, new_state):
     return {
-        k:v for k in new_state.iteritems()
-        if (k not in old_state) or (v != old_state[k])
+        k:v for k,v in new_state.iteritems() if k not in old_state or v != old_state[k]
     }
 
   def get_state_updates(self):
@@ -128,12 +128,13 @@ class SpaceTeamMessenger:
   """Handles reading and deserializing messages from the server"""
 
   def __init__(self, socket_class,
-               controller_port=8000):
+               controller_port=80):
     # Connect to controller and appraise it of our controls.
     # Make the connection non-blocking _after_ connecting to avoid this nonsense:
     # https://stackoverflow.com/a/6206705/495611
     self._socket = socket_class(socket.AF_INET, socket.SOCK_STREAM)
-    self._socket.connect(('localhost', controller_port))
+    self._socket.connect((CONTROLLER_IP, controller_port))
+    #self._socket.connect(CONTROLLER_IP)
     self._socket.setblocking(0)
     self._msg_buffer = ''
 

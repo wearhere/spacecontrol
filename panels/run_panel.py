@@ -6,7 +6,8 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import keyboard_panel
+#import keyboard_panel
+import meringue_panel
 
 from panel_client import PanelClient
 
@@ -14,7 +15,8 @@ import os
 import sys
 
 
-PANELS = [keyboard_panel.KeyboardPanel]
+#PANELS = [keyboard_panel.KeyboardPanel]
+PANELS = [meringue_panel.MeringuePanel]
 
 
 def main():
