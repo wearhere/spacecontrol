@@ -72,6 +72,7 @@ const GameModel = Backbone.Model.extend({
 
     this.on('change:sunProgress', (model, sunProgress) => {
       if (sunProgress >= this.get('progress')) {
+        // Sun has caught the player--game over! Reset to the initial state.
         this.set(_.result(this, 'defaults'));
       }
     });
