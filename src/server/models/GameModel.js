@@ -1,11 +1,17 @@
 const _ = require('underscore');
 const Backbone = require('backbone');
+const {
+  SUN_INITIAL_PROGRESS,
+  SUN_PROGRESS_INCREMENT,
+  SUN_UPDATE_INTERVAL_MS
+} = require('../../common/GameConstants');
 
 const GameModel = Backbone.Model.extend({
   defaults: {
     // This is state shared with the client.
     started: false,
-    progress: 0
+    progress: 0,
+    sunProgress: SUN_INITIAL_PROGRESS
   },
 
   // A requirement of `backbone-publication`.
@@ -58,6 +64,17 @@ const GameModel = Backbone.Model.extend({
       _.each(this._publications, (publication) => {
         publication.changed('game', this.id, this.changedAttributes());
       });
+    });
+
+    setInterval(() => {
+      this.set('sunProgress', this.get('sunProgress') + SUN_PROGRESS_INCREMENT);
+    }, SUN_UPDATE_INTERVAL_MS);
+
+    this.on('change:sunProgress', (model, sunProgress) => {
+      if (sunProgress >= this.get('progress')) {
+        // Sun has caught the player--game over! Reset to the initial state.
+        this.set(_.result(this, 'defaults'));
+      }
     });
   },
 
