@@ -40,7 +40,7 @@ const build = new MultiBuild({
         'process.env.NODE_ENV': '"development"'
       }),
       rootImport({
-        root: [`${__dirname}/src/client`],
+        root: [`${__dirname}/src/client`, `${__dirname}/src/common`],
         // Because we omit the .js most of the time, we put it first, and
         // explicitly specify that it should attempt the lack of extension
         // only after it tries to resolve with the extension.
@@ -48,14 +48,23 @@ const build = new MultiBuild({
       }),
       nodeResolve(),
       commonJS({
-        include: 'node_modules/**',
+        include: ['node_modules/**', 'src/common/**'],
+        namedExports: {
+          'src/common/GameConstants.js': [
+            'SUN_INITIAL_PROGRESS',
+            'SUN_PROGRESS_INCREMENT',
+            'SUN_UPDATE_INTERVAL_MS'
+          ]
+        }
       }),
       babel({
+        // Don't transpile to ES5, we can assume this will only run in modern browsers.
         plugins: [
           'external-helpers',
           'syntax-jsx',
           'transform-react-jsx',
-          'transform-react-display-name'
+          'transform-react-display-name',
+          'transform-object-rest-spread'
         ],
         exclude: 'node_modules/**'
       })
@@ -102,7 +111,7 @@ gulp.task('server', function() {
   nodemon({
     script: 'src/server/app.js',
     ext: 'js, html',
-    watch: ['src/server/**/*']
+    watch: ['src/server/**/*', 'src/common/**/*']
   })
     .on('restart', function() {
       // Workaround: https://github.com/JacksonGariety/gulp-nodemon/issues/40
