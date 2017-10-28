@@ -58,14 +58,6 @@ const GameModel = Backbone.Model.extend({
       }
     });
 
-    // Whenever game state mutates, publish it to the `GameModel` client-side.
-    this._publications = [];
-    this.on('change', () => {
-      _.each(this._publications, (publication) => {
-        publication.changed('game', this.id, this.changedAttributes());
-      });
-    });
-
     setInterval(() => {
       this.set('sunProgress', this.get('sunProgress') + SUN_PROGRESS_INCREMENT);
     }, SUN_UPDATE_INTERVAL_MS);
@@ -75,6 +67,14 @@ const GameModel = Backbone.Model.extend({
         // Sun has caught the player--game over! Reset to the initial state.
         this.set(_.result(this, 'defaults'));
       }
+    });
+
+    // Whenever game state mutates, publish it to the `GameModel` client-side.
+    this._publications = [];
+    this.on('change', () => {
+      _.each(this._publications, (publication) => {
+        publication.changed('game', this.id, this.changedAttributes());
+      });
     });
   },
 
