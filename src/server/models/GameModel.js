@@ -20,7 +20,7 @@ const GameModel = Backbone.Model.extend({
         this._assignCommands();
 
         this.listenTo(panel.controls, {
-          update: (_, { changes: { added, removed } }) => {
+          update: (controls, { changes: { added, removed } }) => {
             this._controlsRemoved(removed);
             if (!_.isEmpty(added)) this._assignCommands();
           },
