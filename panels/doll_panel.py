@@ -330,7 +330,7 @@ def poll_doll_input(input_queue):
 class DollPanel(PanelStateBase):
   """Simulate a panel using the keyboard."""
 
-  def __init__(self, stdin, player_number):
+  def __init__(self):
     self.input_queue = Queue.Queue()
 
     self.kbd_thread = threading.Thread(

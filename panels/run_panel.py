@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
+import doll_panel
 import keyboard_panel
 
 from panel_client import PanelClient
@@ -15,8 +16,7 @@ import signal
 import sys
 
 
-PANELS = [keyboard_panel.KeyboardPanel]
-
+PANELS = [doll_panel.DollPanel, keyboard_panel.KeyboardPanel]
 
 def main():
   parser = argparse.ArgumentParser(
@@ -39,7 +39,7 @@ def main():
   if panel_class.__name__ == "KeyboardPanel":
     new_stdin = os.fdopen(os.dup(sys.stdin.fileno()))
     panel_class = lambda: keyboard_panel.KeyboardPanel(new_stdin, args.player_number)
-  
+
   client = PanelClient(panel_class)
 
   client.start()
