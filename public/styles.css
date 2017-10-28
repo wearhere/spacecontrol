@@ -1,0 +1,20 @@
+body {
+  color: white;
+}
+
+h1 {
+  font-size: 5em;
+}
+
+#app {
+  height: 100vh;
+  background-image: url('https://ladieslovekewlbowser.files.wordpress.com/2012/03/heic0807c_h1.jpg');
+  background-size: cover;
+  position: relative;
+  overflow: hidden;
+}
+
+.hud {
+  float: right;
+  margin: 1em 3em auto auto;
+}

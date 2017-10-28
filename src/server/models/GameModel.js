@@ -1,18 +1,13 @@
 const _ = require('underscore');
 const Backbone = require('backbone');
+const defaults = require('../../common/GameModelDefaults');
 const {
-  SUN_INITIAL_PROGRESS,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS
 } = require('../../common/GameConstants');
 
 const GameModel = Backbone.Model.extend({
-  defaults: {
-    // This is state shared with the client.
-    started: false,
-    progress: 0,
-    sunProgress: SUN_INITIAL_PROGRESS
-  },
+  defaults,
 
   // A requirement of `backbone-publication`.
   idAttribute: '_id',
@@ -55,6 +50,17 @@ const GameModel = Backbone.Model.extend({
         this._commands.remove(command);
         this.panels.findWhere({ command }).unset('command');
         this.set('progress', this.get('progress') + 10);
+      }
+    });
+
+    this.on('change:progress', (model, progress) => {
+      if (progress >= 100) { // >= vs. === for safety belts.
+        // Level up!
+        this.set({
+          level: this.get('level') + 1,
+          progress: 0,
+          sunProgress: _.result(this, 'defaults').sunProgress
+        });
       }
     });
 

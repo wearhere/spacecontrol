@@ -1,9 +1,10 @@
 import _ from 'underscore';
 import CBR from 'connect-backbone-to-react';
 const { connectBackboneToReact } = CBR;
+import HUD from '/views/HUD';
 import React from 'react';
-import Spaceship from '/Spaceship';
-import Sun from '/Sun';
+import Spaceship from '/views/Spaceship';
+import Sun from '/views/Sun';
 import {
   SUN_INITIAL_PROGRESS,
   SUN_UPDATE_INTERVAL_MS
@@ -18,27 +19,22 @@ function App(props) {
 
   return (
     <div>
+      <HUD level={props.level} />
       {/* HACK(jeff): Hardcode some numbers here to sync the position of the sun and the spaceship
         * given the same values of `sunProgress` and `progress`. */}
-      <div style={{
+      <Sun style={{
         marginLeft: `calc(-2110px + ${props.sunProgress}vw + 20vw)`,
         // Immediately transition back to the initial state, otherwise animate.
-        transition: `all ${sunUpdateIntervalMs / 1000}s linear`
-      }}>
-        <Sun/>
-      </div>
-      <div style={{
+        transition: `all ${sunUpdateIntervalMs / 1000}s linear`}} />
+      <Spaceship style={{
         marginLeft: `${props.progress}vw`,
-        transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease`
-      }}>
-        <Spaceship/>
-      </div>
+        transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
     </div>
   );
 }
 
 function mapModelsToProps({ model }) {
-  return _.pick(model.attributes, 'progress', 'sunProgress');
+  return _.pick(model.attributes, 'level', 'progress', 'sunProgress');
 }
 
 export default connectBackboneToReact(mapModelsToProps)(App);
