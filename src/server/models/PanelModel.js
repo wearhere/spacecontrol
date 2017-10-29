@@ -12,11 +12,11 @@ const PanelModel = Backbone.Model.extend({
 
     this._setUpConnection(connection);
 
-    this.on('change:display', (_, display) => {
+    this.on('change:display', (model, display) => {
       this._send('display', { display });
     });
 
-    this.on('change:command', (_, command) => {
+    this.on('change:command', (model, command) => {
       const previousCommand = this.previous('command');
       if (previousCommand) this.stopListening(previousCommand);
       if (command) {
