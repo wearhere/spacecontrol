@@ -1,8 +1,10 @@
-const { SUN_INITIAL_PROGRESS } = require('./GameConstants');
+const {
+  GAME_STATE: { WAITING_FOR_PLAYERS },
+  SUN_INITIAL_PROGRESS,
+} = require('./GameConstants');
 
 const defaults = {
-  // 'waiting for players', 'waiting to start', 'started'
-  state: 'waiting for players',
+  state: WAITING_FOR_PLAYERS,
   timeToStart: null,
   level: 1,
   progress: 0,

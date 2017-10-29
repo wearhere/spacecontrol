@@ -1,5 +1,5 @@
 const Backbone = require('backbone');
-const { TIME_TO_PERFORM_MS } = require('../../common/GameConstants');
+const { timeToPerformMs } = require('../../common/GameConstants');
 
 const CommandModel = Backbone.Model.extend({
   defaults: {
@@ -11,7 +11,7 @@ const CommandModel = Backbone.Model.extend({
 
   _timeToPerformInterval: null,
 
-  start(timeToPerform = TIME_TO_PERFORM_MS) {
+  start(timeToPerform = timeToPerformMs()) {
     if (this._timeToPerformInterval) {
       throw new Error('Command has already been started');
     }
