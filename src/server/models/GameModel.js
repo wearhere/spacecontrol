@@ -45,11 +45,18 @@ const GameModel = Backbone.Model.extend({
       },
 
       'change:command': (panel, command) => {
-        // Assign another command when one finishes if this panel is in play.
-        // If we're waiting to start, wait to give the panel that completed the command
-        // another one until we start.
-        if (!command && (this.get('state') === 'started') && this._playingPanels.contains(panel)) {
-          this._assignCommands();
+        if (!command) {
+          // Assign another command when one finishes if this panel is in play.
+          // If we're waiting to start, wait to give the panel that completed the command
+          // another one until we start.
+          if ((this.get('state') === 'started') && this._playingPanels.contains(panel)) {
+            this._assignCommands();
+          }
+        } else {
+          // Give the player a limited time to perform commands once the game starts.
+          if (this.get('state') === 'started') {
+            command.start();
+          }
         }
       }
     });
@@ -78,6 +85,22 @@ const GameModel = Backbone.Model.extend({
 
     this._commands = new Backbone.Collection();
     this.listenTo(this._commands, {
+      'change:timeToPerform': (command, timeToPerform) => {
+        const assignedPanel = this._playingPanels.findWhere({ command });
+
+        if (timeToPerform > 0) {
+          assignedPanel.set('status', `${timeToPerform / 1000} seconds left!`);
+        } else {
+          // No need to clear this status after display since it will shortly be replaced by the
+          // new timer.
+          assignedPanel.set('status', 'Too late!');
+          this.set('progress', Math.max(this.get('progress') - 10, 0));
+
+          this._commands.remove(command);
+          assignedPanel.unset('command');
+        }
+      },
+
       'change:completed': (command) => {
         this._commands.remove(command);
 
@@ -145,6 +168,7 @@ const GameModel = Backbone.Model.extend({
 
           case 'waiting for players':
             // Reset the panels so that players may signal they're ready.
+            this.panels.forEach((panel) => panel.unset('status'));
             this._assignCommands();
 
             break;
@@ -178,9 +202,11 @@ const GameModel = Backbone.Model.extend({
         }
       },
 
-      'change:sunProgress': (model, sunProgress) => {
-        if (sunProgress >= this.get('progress')) {
-          // Sun has caught the player.--game over! Reset to the initial state.
+      // Check whether the sun has caught the player when both the sun progress _and_ the progress
+      // change since the player might slide backward if they miss a command.
+      'change:sunProgress change:progress': () => {
+        if (this.get('sunProgress') >= this.get('progress')) {
+          // Sun has caught the player--game over! Reset to the initial state.
           this._endGame();
         }
       },
