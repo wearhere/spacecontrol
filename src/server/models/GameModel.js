@@ -275,8 +275,11 @@ const GameModel = Backbone.Model.extend({
       panel.set({ command });
       this._commands.add(command);
 
-      // Give the player a limited time to perform commands.
-      command.start(timeToPerformMs(this.get('state')));
+      // Give the player a limited time to perform commands. Once we start, skip announcing the
+      // first tick so that we don't wipe out the 'Nice job!' or 'Too late!' messages from
+      // completing the last command.
+      const announceStart = this.get('state') !== STARTED;
+      command.start(timeToPerformMs(this.get('state')), announceStart);
     };
 
     // If we're waiting to start, we assign only same-panel commands, so that we may detect if
