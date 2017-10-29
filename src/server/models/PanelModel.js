@@ -1,5 +1,6 @@
 const Backbone = require('backbone');
 const ControlCollection = require('./ControlCollection');
+const MessageClient = require('../utils/MessageClient');
 
 const PanelModel = Backbone.Model.extend({
   defaults: {
@@ -29,39 +30,8 @@ const PanelModel = Backbone.Model.extend({
   },
 
   _setUpConnection(connection) {
-    // It's not guaranteed that we'll receive the Python `sendall`, i.e. a
-    // single JSON-encoded message. we need to expect we might receive more or
-    // less data than that and so buffer the data. we expect the first 4 bytes
-    // of data to include the amount of data which will be recieved
-    let buffer = Buffer.alloc(0);
-
-    connection.on('data', (chunk) => {
-      buffer = Buffer.concat([buffer, chunk]);
-
-      // Parse the data in a loop in case we got multiple messages at once.
-      // We need at least 4 bytes for a message.
-      while (buffer.length >= 4) {
-        const msgLength = buffer.readUInt32BE();
-        const msgEnd = 4 + msgLength;
-
-        // not enough data for a complete message
-        if (buffer.length < msgEnd) break;
-
-        // extract a message from the buffer
-        const msg = buffer.slice(4, msgEnd).toString();
-        buffer = buffer.slice(msgEnd);
-
-        // parse the message json
-        let event;
-        try {
-          event = JSON.parse(msg);
-        } catch (e) {
-          console.error(`Invalid panel message received: ${chunk}: ${e}`);
-          continue;
-        }
-
-        // act on the message
-        const { message, data } = event;
+    this._client = new MessageClient({ socket: connection })
+      .on('message', ({ message, data }) => {
         switch (message) {
           case 'announce': {
             const { controls } = data;
@@ -83,36 +53,20 @@ const PanelModel = Backbone.Model.extend({
             break;
           }
         }
-      }
-    });
-
-    connection.on('error', (err) => {
-      if (err.code === 'ECONNRESET') {
-        // This happens when the connection closes before the other end has read everything that
-        // we've written to it. We assume that the panel connection could drop at any time so don't
-        // bother logging this.
-      } else {
+      })
+      .on('error', (err) => {
         console.error('Panel connection errored:', err);
-      }
-    });
-
-    connection.on('close', () => {
-      this.trigger('destroy', this, this.collection);
-      this._connection = null;
-    });
-
-    this._connection = connection;
+      })
+      .on('close', () => {
+        this.trigger('destroy', this, this.collection);
+        this._client = null;
+      });
   },
 
   _send(message, data) {
-    if (!this._connection) return; // Connection might have closed.
-    const str = JSON.stringify({ message, data });
+    if (!this._client) return; // Connection has closed.
 
-    const buffer = Buffer.alloc(4 + str.length);
-    buffer.writeUInt32BE(str.length, 0);
-    buffer.write(str, 4);
-
-    this._connection.write(buffer);
+    this._client.send(message, data);
   }
 });
 
