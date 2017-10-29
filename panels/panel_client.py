@@ -21,9 +21,9 @@ MIN_LATENCY_MS = 10
 
 class PanelStateBase:
 
-  def diff_states(old_state, new_state):
+  def diff_states(self, old_state, new_state):
     return {
-        k:v for k in new_state.iteritems()
+        k:v for k, v in new_state.iteritems()
         if (k not in old_state) or (v != old_state[k])
     }
 
