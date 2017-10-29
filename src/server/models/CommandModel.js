@@ -6,16 +6,18 @@ const CommandModel = Backbone.Model.extend({
     control: null,
     action: null,
     state: null,
-    completed: false,
-    timeToPerform: TIME_TO_PERFORM_MS
+    completed: false
   },
 
   _timeToPerformInterval: null,
 
-  start() {
+  start(timeToPerform = TIME_TO_PERFORM_MS) {
     if (this._timeToPerformInterval) {
       throw new Error('Command has already been started');
     }
+
+    // Set the starting time-to-perform.
+    this.set({ timeToPerform });
 
     this._timeToPerformInterval = setInterval(() => {
       const timeToPerform = this.get('timeToPerform') - 1000;

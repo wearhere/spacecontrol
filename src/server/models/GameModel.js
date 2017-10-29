@@ -53,11 +53,6 @@ const GameModel = Backbone.Model.extend({
           if ((this.get('state') === 'started') && this._playingPanels.contains(panel)) {
             this._assignCommands();
           }
-        } else {
-          // Give the player a limited time to perform commands once the game starts.
-          if (this.get('state') === 'started') {
-            command.start();
-          }
         }
       }
     });
@@ -275,6 +270,11 @@ const GameModel = Backbone.Model.extend({
       const command = control.getCommand();
       panel.set({ command });
       this._commands.add(command);
+
+      // Give the player a limited time to perform commands once the game starts.
+      if (this.get('state') === 'started') {
+        command.start();
+      }
     };
 
     // If we're waiting to start, we assign only same-panel commands, so that we may detect if
