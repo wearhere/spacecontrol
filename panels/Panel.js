@@ -1,6 +1,8 @@
 const { Component } = require('ink');
 const MessageClient = require('../src/server/utils/MessageClient');
 
+const LCD_WIDTH = 20; // Characters.
+
 class Panel extends Component {
   componentDidMount() {
     const host = process.env.CONTROLLER_IP || 'localhost';
@@ -13,7 +15,7 @@ class Panel extends Component {
             this.display = data.message;
             break;
           case 'set-status':
-            this.status = data.message;
+            this.status = data;
             break;
         }
       })
@@ -35,7 +37,7 @@ class Panel extends Component {
     throw new Error('Subclass must override');
   }
 
-  set status(message) {
+  set status(data) {
     throw new Error('Subclass must override');
   }
 
@@ -45,3 +47,4 @@ class Panel extends Component {
 }
 
 module.exports = Panel;
+module.exports.LCD_WIDTH = LCD_WIDTH;

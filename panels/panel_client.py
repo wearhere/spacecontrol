@@ -18,6 +18,7 @@ PANEL_IO_START_SECONDS = 2
 # Polling interval of the IO process
 MIN_LATENCY_MS = 10
 
+LCD_WIDTH = 20 # Characters.
 
 class PanelStateBase:
 
@@ -51,10 +52,11 @@ class PanelStateBase:
     Display a message from the server for the user."""
     raise NotImplementedError()
 
-  def display_status(self, message):
+  def display_status(self, data):
     """Must implement this function for your panel.
 
-    Display a status message from the server for the user."""
+    Display a status message from the server for the user. `data` takes multiple forms, see
+    the notes on the `'set-status'` message in the README."""
     raise NotImplementedError()
 
 
@@ -140,7 +142,7 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, 
         if message['message'] == 'set-display':
           panel_state.display_message(message['data']['message'])
         elif message['message'] == 'set-status':
-          panel_state.display_status(message['data']['message'])
+          panel_state.display_status(message['data'])
       except EmptyQueueException:
         pass
       time.sleep(MIN_LATENCY_MS / 1000)

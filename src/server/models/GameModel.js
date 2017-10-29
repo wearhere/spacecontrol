@@ -4,7 +4,8 @@ const defaults = require('../../common/GameModelDefaults');
 const {
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
-  TIME_TO_START_MS
+  TIME_TO_START_MS,
+  TIME_TO_PERFORM_MS
 } = require('../../common/GameConstants');
 
 const GameModel = Backbone.Model.extend({
@@ -89,11 +90,11 @@ const GameModel = Backbone.Model.extend({
         const assignedPanel = this._playingPanels.findWhere({ command });
 
         if (timeToPerform > 0) {
-          assignedPanel.set('status', `${timeToPerform / 1000} seconds left!`);
+          assignedPanel.set('status', { progress: timeToPerform / TIME_TO_PERFORM_MS });
         } else {
           // No need to clear this status after display since it will shortly be replaced by the
           // new timer.
-          assignedPanel.set('status', 'Too late!');
+          assignedPanel.set('status', { message: 'Too late!' });
           this.set('progress', Math.max(this.get('progress') - 10, 0));
 
           this._commands.remove(command);
@@ -110,9 +111,9 @@ const GameModel = Backbone.Model.extend({
 
         // Push the status before unsetting the command, as that will cause a new command to be
         // assigned and sent.
-        assignedPanel.set('status', 'Nice job!');
+        assignedPanel.set('status', { message: 'Nice job!' });
         setTimeout(() => {
-          if (assignedPanel.get('status') === 'Nice job!') {
+          if (_.isEqual(assignedPanel.get('status'), { message: 'Nice job!' })) {
             assignedPanel.unset('status');
           }
         }, 500);

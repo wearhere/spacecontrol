@@ -2,7 +2,9 @@
 const _ = require('underscore');
 const { h, render, Text } = require('ink');
 const TextInput = require('ink-text-input');
+const ProgressBar = require('ink-progress-bar');
 const Panel = require('./Panel');
+const { LCD_WIDTH } = Panel;
 
 const argv = require('yargs')
   .usage('Usage: $0 <options>')
@@ -53,7 +55,7 @@ class KeyboardPanel extends Panel {
 
     this.state = {
       display: '',
-      status: '',
+      status: null,
       input: ''
     };
   }
@@ -66,11 +68,21 @@ class KeyboardPanel extends Panel {
     this.setState({ display: message });
   }
 
-  set status(message) {
-    this.setState({ status: message });
+  set status(data) {
+    this.setState({ status: data });
   }
 
   render(props, state) {
+    let status;
+    if (state.status) {
+      const { message, progress } = state.status;
+      if (message) {
+        status = message;
+      } else if (progress) {
+        status = <ProgressBar columns={LCD_WIDTH} percent={progress} />;
+      }
+    }
+
     return (
       <div>
         <div>
@@ -81,7 +93,7 @@ class KeyboardPanel extends Panel {
 
         <div>
           <Text red>{state.display}</Text><br/>
-          {state.status}
+          {status}
         </div>
         <br/>
 

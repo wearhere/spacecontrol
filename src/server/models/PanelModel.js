@@ -17,8 +17,8 @@ const PanelModel = Backbone.Model.extend({
       this._send('set-display', { message });
     });
 
-    this.on('change:status', (model, message='') => {
-      this._send('set-status', { message });
+    this.on('change:status', (model, status = { message: '' }) => {
+      this._send('set-status', status);
     });
 
     this.on('change:command', (model, command) => {

@@ -1,4 +1,5 @@
 const Backbone = require('backbone');
+const { TIME_TO_PERFORM_MS } = require('../../common/GameConstants');
 
 const CommandModel = Backbone.Model.extend({
   defaults: {
@@ -6,7 +7,7 @@ const CommandModel = Backbone.Model.extend({
     action: null,
     state: null,
     completed: false,
-    timeToPerform: 5000
+    timeToPerform: TIME_TO_PERFORM_MS
   },
 
   _timeToPerformInterval: null,
