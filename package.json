@@ -15,6 +15,7 @@
     "connect-livereload": "^0.6.0",
     "express": "^4.15.4",
     "ink": "^0.3.1",
+    "ink-progress-bar": "^2.0.1",
     "ink-text-input": "^1.1.1",
     "publication-client": "^1.4.6",
     "publication-server": "github:mixmaxhq/publication-server#jeff/node8_support",

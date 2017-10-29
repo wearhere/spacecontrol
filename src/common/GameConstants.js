@@ -20,9 +20,14 @@ const SUN_INITIAL_PROGRESS = -((SUN_DELAY_MS / SUN_UPDATE_INTERVAL_MS) * SUN_PRO
 // before the game starts.
 const TIME_TO_START_MS = 10 * 1000;
 
+// The time players are given to perform commands before the command is replaced and the ship
+// slides backwards.
+const TIME_TO_PERFORM_MS = 5 * 1000;
+
 module.exports = {
   SUN_INITIAL_PROGRESS,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
-  TIME_TO_START_MS
+  TIME_TO_START_MS,
+  TIME_TO_PERFORM_MS
 };

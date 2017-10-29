@@ -66,36 +66,47 @@ out who can perform the command.
 Panel code can be found in the panels/ directory
 
 ### Simple panel setup:
-The quickes way to get started is to extend PanelStateBase. Refer to keyboard_panel.py for an example.
-There are three functions you must implement:
-`get_state_updates` - should return any changes to panel state since the last call to this function. (hint: consider using PanelStateBase.diff_states).
-`get_controls` - should return the panel's available controls.
-`display_message` - show the message to the user. 
 
-You can instead define a `panel_main` method if you prefer. 
+The quickest way to get started is to extend PanelStateBase. Refer to keyboard_panel.py for an example.
+There are several functions you must implement:
+
+1. `get_state_updates` - should return any changes to panel state since the last call to this function. (hint: consider using PanelStateBase.diff_states).
+2. `get_controls` - should return the panel's available controls.
+3. `display_message` - show a message to the user.
+4. `display_status` - show a secondary, "status" message to the user. This message takes multiple
+forms--see the notes on the `'set_status`' message below.
+
+You can instead define a `panel_main` method if you prefer to run arbitrary code (see next section).
 
 ### In-depth/roll your own
 
 Panels should open socket connections to `localhost:8000` and communicate with the server by sending
-JSON-encoding data. The beginning of a message should contain a four byte integer: this is the length
-of the message. 
+JSON-encoding data. The beginning of a message should contain a 32-bit unsigned integer: this is the length
+of the message.
 
 ```
-{ "message": "a string", "data": <any JSON-serializable data> } 
+{ "message": "a string", "data": <any JSON-serializable data> }
 ```
 
-See `panel_client._encode()` for an example. 
+See `panel_client._encode()` for an example.
 
 They should maintain a list of the controls attached to the panel, in the format shown
-at the top of `keyboard_panel.py`. If your panel can detect controls going up/down, then it should 
+at the top of `keyboard_panel.py`. If your panel can detect controls going up/down, then it should
 call `announce` each time available controls change. This will cause the server to recalculate
 what commands are available to it.
 
 (This means that we won't have to babysit this setup, it can cope with controls or even
 entire panels dropping out.)
 
-When an event with `message: 'display'` is received, the panel should display the value of
-`data.display` on its attached display&mdash;this is the command for the player to perform.
+When an event with `message: 'set-display'` is received, the panel should display the value of
+`data.message` on its attached display&mdash;this is the command for the player to perform.
+
+When an event with `message: 'set-status'` is received:
+
+* if `data` contains the key `message`, the panel should display `data['message']` at the bottom of
+its attached display.
+* otherwise, if `data` contains the key `progress`, the panel should display a progress bar at the
+bottom of its display, of width `floor(data['progress'] * LCD_WIDTH)`.
 
 When a control is manipulated, the panel should send an event like
 
