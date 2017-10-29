@@ -55,12 +55,15 @@ class MessageClient extends EventEmitter {
       const msg = this._buffer.slice(4, msgEnd).toString();
       this._buffer = this._buffer.slice(msgEnd);
 
+      let decodedMsg;
       try {
-        const decodedMsg = JSON.parse(msg);
-        this.emit('message', decodedMsg);
+        decodedMsg = JSON.parse(msg);
       } catch (e) {
         console.error(`Invalid server message received: ${data}: ${e}`);
       }
+
+      // This isn't in the `try` block since we don't want to catch errors in the event handlers.
+      if (decodedMsg) this.emit('message', decodedMsg);
     }
   }
 
