@@ -2,10 +2,11 @@ const _ = require('underscore');
 const Backbone = require('backbone');
 const defaults = require('../../common/GameModelDefaults');
 const {
+  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, STARTED },
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
   TIME_TO_START_MS,
-  TIME_TO_PERFORM_MS
+  timeToPerformMs
 } = require('../../common/GameConstants');
 
 const GameModel = Backbone.Model.extend({
@@ -46,38 +47,26 @@ const GameModel = Backbone.Model.extend({
       },
 
       'change:command': (panel, command) => {
-        if (!command) {
-          // Assign another command when one finishes if this panel is in play.
-          // If we're waiting to start, wait to give the panel that completed the command
-          // another one until we start.
-          if ((this.get('state') === 'started') && this._playingPanels.contains(panel)) {
-            this._assignCommands();
-          }
-        } else {
-          // Give the player a limited time to perform commands once the game starts.
-          if (this.get('state') === 'started') {
-            command.start();
-          }
-        }
+        if (!command) this._assignCommands();
       }
     });
 
     this._playingPanels = new Backbone.Collection();
     this.listenTo(this._playingPanels, {
       add: () => {
-        if (this.get('state') === 'waiting for players') {
-          this.set('state', 'waiting to start');
+        if (this.get('state') === WAITING_FOR_PLAYERS) {
+          this.set('state', WAITING_TO_START);
         }
       },
 
       remove: () => {
         if (this._playingPanels.isEmpty()) {
-          if (this.get('state') === 'started') {
+          if (this.get('state') === STARTED) {
             this._endGame();
           } else {
             this.set({
               timeToStart: null,
-              state: 'waiting for players'
+              state: WAITING_FOR_PLAYERS
             });
           }
         }
@@ -87,15 +76,19 @@ const GameModel = Backbone.Model.extend({
     this._commands = new Backbone.Collection();
     this.listenTo(this._commands, {
       'change:timeToPerform': (command, timeToPerform) => {
-        const assignedPanel = this._playingPanels.findWhere({ command });
+        const gameStarted = this.get('state') === STARTED;
+        const panels = gameStarted ? this._playingPanels : this.panels;
+        const assignedPanel = panels.findWhere({ command });
 
         if (timeToPerform > 0) {
-          assignedPanel.set('status', { progress: timeToPerform / TIME_TO_PERFORM_MS });
+          assignedPanel.set('status', { progress: timeToPerform / timeToPerformMs(this.get('state')) });
         } else {
-          // No need to clear this status after display since it will shortly be replaced by the
-          // new timer.
-          assignedPanel.set('status', { message: 'Too late!' });
-          this.set('progress', Math.max(this.get('progress') - 10, 0));
+          if (gameStarted) {
+            // No need to clear this status after display since it will shortly be replaced by the
+            // new timer.
+            assignedPanel.set('status', { message: 'Too late!' });
+            this.set('progress', Math.max(this.get('progress') - 10, 0));
+          }
 
           this._commands.remove(command);
           assignedPanel.unset('command');
@@ -118,13 +111,15 @@ const GameModel = Backbone.Model.extend({
           }
         }, 500);
 
-        assignedPanel.unset('command');
-
-        if (this.get('state') !== 'started') {
+        if (this.get('state') !== STARTED) {
           this._playingPanels.add(assignedPanel);
         } else {
           this.set('progress', this.get('progress') + 10);
         }
+
+        // HACK(jeff): Unset the command after potentially adding the panel to `this._playingPanels`
+        // to prevent a panel waiting to start from getting a new command.
+        assignedPanel.unset('command');
       }
     });
 
@@ -137,9 +132,9 @@ const GameModel = Backbone.Model.extend({
         clearInterval(this._sunInterval);
 
         switch (state) {
-          case 'started': {
+          case STARTED: {
             // Discard any commands on which we are waiting (from panels that didn't report during
-            // the 'waiting to start' phase).
+            // the WAITING_TO_START phase).
             this._commands.forEach((command) => this.panels.findWhere({ command }).unset('command'));
             this._commands.reset();
 
@@ -158,7 +153,7 @@ const GameModel = Backbone.Model.extend({
 
             break;
           }
-          case 'waiting to start':
+          case WAITING_TO_START:
             this.set('timeToStart', TIME_TO_START_MS);
 
             this._timeToStartInterval = setInterval(() => {
@@ -167,7 +162,7 @@ const GameModel = Backbone.Model.extend({
 
             break;
 
-          case 'waiting for players':
+          case WAITING_FOR_PLAYERS:
             // Reset the panels so that players may signal they're ready.
             this.panels.forEach((panel) => panel.unset('status'));
             this._assignCommands();
@@ -182,8 +177,8 @@ const GameModel = Backbone.Model.extend({
       'change:timeToStart': (model, timeToStart) => {
         if (_.isNumber(timeToStart)) {
           if (timeToStart <= 0) { // <= vs. === for safety belts.
-            this.set('state', 'started');
-          } else if (this.get('state') === 'waiting to start') { // Safety belts to avoid wiping out commands.
+            this.set('state', STARTED);
+          } else if (this.get('state') === WAITING_TO_START) { // Safety belts to avoid wiping out commands.
             this._playingPanels.forEach((panel) => {
               // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
               panel.set('display', `Game will start in ${timeToStart / 1000}...`);
@@ -252,10 +247,14 @@ const GameModel = Backbone.Model.extend({
   //     disconnected)
   //  3. One or more existing panels have finished their commands
   _assignCommands() {
-    const panels = (this.get('state') === 'started') ? this._playingPanels : this.panels;
+    const panels = (this.get('state') === STARTED) ? this._playingPanels : this.panels;
 
     // Choose as many controls to manipulate as there are panels needing commands.
-    const panelsNeedingCommands = panels.filter((panel) => !panel.has('command'));
+    // Panels waiting to start will get commands when we start.
+    const panelsNeedingCommands = panels.filter((panel) => {
+      return !panel.has('command') &&
+        !((this.get('state') === WAITING_TO_START) && this._playingPanels.contains(panel));
+    });
     if (_.isEmpty(panelsNeedingCommands)) return;
 
     const controlsToPanels = new WeakMap();
@@ -275,12 +274,18 @@ const GameModel = Backbone.Model.extend({
       const command = control.getCommand();
       panel.set({ command });
       this._commands.add(command);
+
+      // Give the player a limited time to perform commands. Once we start, skip announcing the
+      // first tick so that we don't wipe out the 'Nice job!' or 'Too late!' messages from
+      // completing the last command.
+      const announceStart = this.get('state') !== STARTED;
+      command.start(timeToPerformMs(this.get('state')), announceStart);
     };
 
     // If we're waiting to start, we assign only same-panel commands, so that we may detect if
     // a player is actually at the panel. Otherwise we assign cross-panel commands too, for most
     // shouting.
-    if (this.get('state') === 'started') {
+    if (this.get('state') === STARTED) {
       controlsToAssign = _.sample(inactiveControls, panelsNeedingCommands.length);
 
       panelsNeedingCommands.forEach((panel) => {

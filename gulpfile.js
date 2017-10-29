@@ -75,6 +75,7 @@ const build = new MultiBuild({
             include: ['node_modules/**', 'src/common/**'],
             namedExports: {
               'src/common/GameConstants.js': [
+                'GAME_STATE',
                 'SUN_INITIAL_PROGRESS',
                 'SUN_PROGRESS_INCREMENT',
                 'SUN_UPDATE_INTERVAL_MS'

@@ -6,9 +6,11 @@ import React from 'react';
 import Spaceship from '/views/Spaceship';
 import Sun from '/views/Sun';
 import {
+  GAME_STATE,
   SUN_INITIAL_PROGRESS,
   SUN_UPDATE_INTERVAL_MS
 } from '/GameConstants';
+const { STARTED } = GAME_STATE;
 import TimeToStart from '/views/TimeToStart';
 import Title from '/views/Title';
 
@@ -19,7 +21,7 @@ function App(props) {
   const sunUpdateIntervalMs = (props.sunProgress === SUN_INITIAL_PROGRESS) ?
     SPACESHIP_UPDATE_INTERVAL_MS : SUN_UPDATE_INTERVAL_MS;
 
-  const spaceshipMargin = (props.state === 'started') ?
+  const spaceshipMargin = (props.state === STARTED) ?
     // If the game is in progress move the spaceship along accordingly.
     { marginLeft: `${props.progress}vw` } :
     // Otherwise center it under the title.
@@ -27,9 +29,9 @@ function App(props) {
 
   return (
     <div>
-      {(props.state === 'started') && <HUD level={props.level} />}
+      {(props.state === STARTED) && <HUD level={props.level} />}
 
-      {(props.state !== 'started') && <Title/>}
+      {(props.state !== STARTED) && <Title/>}
 
       {/* HACK(jeff): Hardcode some numbers here to sync the position of the sun and the spaceship
         * given the same values of `sunProgress` and `progress`. */}
