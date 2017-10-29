@@ -49,6 +49,13 @@ class PanelStateBase:
     """Must implement this function for your panel.
 
     Display a message from the server for the user."""
+    raise NotImplementedError()
+
+  def display_status(self, message):
+    """Must implement this function for your panel.
+
+    Display a status message from the server for the user."""
+    raise NotImplementedError()
 
 
 def _validate_controls(controls):
@@ -130,8 +137,10 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, 
         action_queue.put(_make_update_message(update))
       try:
         message = message_queue.get(block=False)
-        if message['message'] == 'display':
-          panel_state.display_message(message['data']['display'])
+        if message['message'] == 'set-display':
+          panel_state.display_message(message['data']['message'])
+        elif message['message'] == 'set-status':
+          panel_state.display_status(message['data']['message'])
       except EmptyQueueException:
         pass
       time.sleep(MIN_LATENCY_MS / 1000)

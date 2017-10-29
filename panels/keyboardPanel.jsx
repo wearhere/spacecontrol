@@ -41,6 +41,10 @@ const CONTROL_SCHEMES = [
   }]
 ];
 
+function Cursor() {
+  return <Text dim>█</Text>;
+}
+
 class KeyboardPanel extends Panel {
   constructor() {
     super();
@@ -48,7 +52,7 @@ class KeyboardPanel extends Panel {
     this._controls = CONTROL_SCHEMES[argv.playerNumber - 1];
 
     this.state = {
-      command: '',
+      display: '',
       status: '',
       input: ''
     };
@@ -58,24 +62,12 @@ class KeyboardPanel extends Panel {
     return this._controls;
   }
 
-  set display(display) {
-    // HACK(jeff): Show 'Nice job!' as statuses. This will be fixed by restructuring the protocol to
-    // explicitly send status messages.
-    if (display === 'Nice job!') {
-      this.setState({ status: display });
+  set display(message) {
+    this.setState({ display: message });
+  }
 
-      // Clear the status.
-      // TODO(jeff): Do this server-side.
-      setTimeout(() => {
-        this.setState((prevState) => {
-          if (prevState.status === 'Nice job!') {
-            this.setState({ status: '' });
-          }
-        });
-      }, 500);
-    } else {
-      this.setState({ command: display });
-    }
+  set status(message) {
+    this.setState({ status: message });
   }
 
   render(props, state) {
@@ -88,7 +80,7 @@ class KeyboardPanel extends Panel {
         <br/>
 
         <div>
-          <Text red>{state.command}</Text><br/>
+          <Text red>{state.display}</Text><br/>
           {state.status}
         </div>
         <br/>
@@ -101,6 +93,8 @@ class KeyboardPanel extends Panel {
             onChange={::this.handleChange}
             onSubmit={::this.handleSubmit}
           />
+          {/* Put a cursor afterward since `TextInput` will not do this. */}
+          <Cursor/>
         </div>
       </div>
     );

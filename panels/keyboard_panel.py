@@ -146,5 +146,10 @@ class KeyboardPanel(PanelStateBase):
     """Prints the message with a prefix (to differentiate it from what the user types)."""
     print('> ' + message)
 
+  def display_status(self, message):
+    """Prints the message with a prefix (to differentiate it from what the user types)."""
+    if message:
+      print('> ' + message)
+
   def __del__(self):
     self.stop_event.set()

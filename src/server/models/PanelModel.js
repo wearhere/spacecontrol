@@ -13,8 +13,12 @@ const PanelModel = Backbone.Model.extend({
 
     this._setUpConnection(connection);
 
-    this.on('change:display', (model, display) => {
-      this._send('display', { display });
+    this.on('change:display', (model, message='') => {
+      this._send('set-display', { message });
+    });
+
+    this.on('change:status', (model, message='') => {
+      this._send('set-status', { message });
     });
 
     this.on('change:command', (model, command) => {
@@ -22,9 +26,6 @@ const PanelModel = Backbone.Model.extend({
       if (previousCommand) this.stopListening(previousCommand);
       if (command) {
         this.set('display', command.get('action'));
-        this.listenToOnce(command, 'change:completed', () => {
-          this.set('display', 'Nice job!');
-        });
       }
     });
   },

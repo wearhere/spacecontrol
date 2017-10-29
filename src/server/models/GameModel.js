@@ -84,6 +84,16 @@ const GameModel = Backbone.Model.extend({
         // Search _all_ panels for the one reporting the command not just playing panels,
         // since this may be before the game starts.
         const assignedPanel = this.panels.findWhere({ command });
+
+        // Push the status before unsetting the command, as that will cause a new command to be
+        // assigned and sent.
+        assignedPanel.set('status', 'Nice job!');
+        setTimeout(() => {
+          if (assignedPanel.get('status') === 'Nice job!') {
+            assignedPanel.unset('status');
+          }
+        }, 500);
+
         assignedPanel.unset('command');
 
         if (this.get('state') !== 'started') {

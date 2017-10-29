@@ -9,8 +9,12 @@ class Panel extends Component {
     this._client = new MessageClient({ host, port })
       .on('message', ({ message, data }) =>{
         switch (message) {
-          case 'display':
-            this.display = data.display;
+          case 'set-display':
+            this.display = data.message;
+            break;
+          case 'set-status':
+            this.status = data.message;
+            break;
         }
       })
       .on('error', (error) => {
@@ -27,7 +31,11 @@ class Panel extends Component {
     throw new Error('Subclass must override');
   }
 
-  set display(display) {
+  set display(message) {
+    throw new Error('Subclass must override');
+  }
+
+  set status(message) {
     throw new Error('Subclass must override');
   }
 
