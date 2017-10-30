@@ -82,7 +82,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Rat kisses Madeline\s nipple'
+            '1': 'Rat kisses Madeline\'s nipple'
         }
     },
     {
@@ -91,7 +91,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Rat tickles Madeline\s lady bits'
+            '1': 'Rat tickles Madeline\'s lady bits'
         }
     },
     {
@@ -145,7 +145,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Rat tickles Madeline\s nipples with its tail'
+            '1': 'Rat tickles Madeline\'s nipples with its tail'
         }
     },
     {
@@ -154,7 +154,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Rat tickles Madeline\s lady bits with its tail'
+            '1': 'Rat tickles Madeline\'s lady bits with its tail'
         }
     },
     {
