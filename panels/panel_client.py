@@ -18,12 +18,13 @@ PANEL_IO_START_SECONDS = 2
 # Polling interval of the IO process
 MIN_LATENCY_MS = 10
 
+LCD_WIDTH = 20 # Characters.
 
 class PanelStateBase:
 
-  def diff_states(old_state, new_state):
+  def diff_states(self, old_state, new_state):
     return {
-        k:v for k in new_state.iteritems()
+        k:v for k, v in new_state.iteritems()
         if (k not in old_state) or (v != old_state[k])
     }
 
@@ -49,6 +50,14 @@ class PanelStateBase:
     """Must implement this function for your panel.
 
     Display a message from the server for the user."""
+    raise NotImplementedError()
+
+  def display_status(self, data):
+    """Must implement this function for your panel.
+
+    Display a status message from the server for the user. `data` takes multiple forms, see
+    the notes on the `'set-status'` message in the README."""
+    raise NotImplementedError()
 
 
 def _validate_controls(controls):
@@ -130,8 +139,10 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, 
         action_queue.put(_make_update_message(update))
       try:
         message = message_queue.get(block=False)
-        if message['message'] == 'display':
-          panel_state.display_message(message['data']['display'])
+        if message['message'] == 'set-display':
+          panel_state.display_message(message['data']['message'])
+        elif message['message'] == 'set-status':
+          panel_state.display_status(message['data'])
       except EmptyQueueException:
         pass
       time.sleep(MIN_LATENCY_MS / 1000)

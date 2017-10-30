@@ -11,15 +11,6 @@ import serial
 import threading
 from panel_client import PanelStateBase, MIN_LATENCY_MS
 
-ser = serial.Serial(
-    port='/dev/ttyACM0',
-    baudrate = 9600,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS,
-    timeout=1
-)
-
 # A control is any object that the player can manipulate to put in one or more states. A control can
 # be anything from a button to a switch to a dial to a pair of dolls that you touch against each
 # other.
@@ -322,6 +313,15 @@ CONTROL_SCHEMES = [
 ]
 
 def poll_doll_input(input_queue):
+  ser = serial.Serial(
+      port='/dev/ttyACM0',
+      baudrate=9600,
+      parity=serial.PARITY_NONE,
+      stopbits=serial.STOPBITS_ONE,
+      bytesize=serial.EIGHTBITS,
+      timeout=1
+  )
+
   while True:
     state = ser.readline()
     if state:
@@ -333,9 +333,9 @@ class DollPanel(PanelStateBase):
   def __init__(self):
     self.input_queue = Queue.Queue()
 
-    self.kbd_thread = threading.Thread(
-        target=poll_doll_input, args=(self.input_queue,))
-    self.kbd_thread.start()
+    self.input_thread = threading.Thread(
+        target=poll_doll_input, args=(self.input_queue))
+    self.input_thread.start()
 
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
