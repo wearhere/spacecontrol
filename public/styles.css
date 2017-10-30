@@ -14,12 +14,26 @@ h3 {
   font-size: 4em;
 }
 
-#app {
+@keyframes horizontalscrollbackground {
+  from { background-position: 15vw 10vw; }
+  to { background-position: 115vw 10vw; }
+}
+
+.game {
   height: 100vh;
-  background-image: url('https://ladieslovekewlbowser.files.wordpress.com/2012/03/heic0807c_h1.jpg');
+  background-image: url('/public/starfield.jpg');
+  background-position: 15vw 10vw;
   background-size: cover;
   position: relative;
   overflow: hidden;
+}
+
+/*
+ * WARNING: This pops at the end of the 10 seconds despite the image being doubled so it would
+ * wrap around :( So make sure to stop it before then!
+ */
+.horizontal-scroll-background {
+  animation: 10s linear 0s infinite reverse none running horizontalscrollbackground;
 }
 
 @keyframes fadeindanger {
@@ -59,4 +73,11 @@ h3 {
   /* To center align: https://stackoverflow.com/a/25919090/495611 */
   left: 50%;
   transform: translate(-50%, 0);
+}
+
+@keyframes zoomlefttoright {
+  /* Almost hidden off the left edge of the screen */
+  from { margin-left: -30vw; }
+  /* Tuned to convey the right speed over an animation of TIME_BETWEEN_LEVELS_MS */
+  to { margin-left: 320vw; }
 }
