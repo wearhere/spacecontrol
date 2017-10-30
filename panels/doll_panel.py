@@ -341,7 +341,7 @@ class DollPanel(PanelStateBase):
     """Returns an iterable of control_id, state pairs for new user input."""
     try:
         action, key = self.input_queue.get(block=False).split(',')
-        print('Setting {0} to {1}'.format(key, action))
+        print('Setting {0} to {1}'.format(key.rstrip(), action))
         control = [c['id'] for c in CONTROL_SCHEMES if c['key'] == key.rstrip()]
         yield control[0], action
     except ValueError:
