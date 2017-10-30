@@ -32,7 +32,7 @@ h3 {
  * WARNING: This pops at the end of the 10 seconds despite the image being doubled so it would
  * wrap around :( So make sure to stop it before then!
  */
-.horizontal-scroll-background {
+.game.horizontal-scroll-background {
   animation: 10s linear 0s infinite reverse none running horizontalscrollbackground;
 }
 
