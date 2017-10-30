@@ -334,15 +334,16 @@ class DollPanel(PanelStateBase):
     self.input_queue = Queue.Queue()
 
     self.kbd_thread = threading.Thread(
-        target=poll_doll_input, args=(self.input_queue))
+        target=poll_doll_input, args=(self.input_queue,))
     self.kbd_thread.start()
 
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
     try:
         action, key = self.input_queue.get(block=False).split(',')
-        control = filter(lambda x: x.key == key, CONTROL_SCHEMES)[0]
-        yield control.id, action
+        print('Setting {0} to {1}'.format(key, action))
+        control = [c['id'] for c in CONTROL_SCHEMES if c['key'] == key.rstrip()]
+        yield control[0], action
     except ValueError:
       self.display_message(
           'Invalid format. Must be of the form "control_id state"')

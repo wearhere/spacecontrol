@@ -213,6 +213,8 @@ class SpaceTeamMessenger:
     # Make the connection non-blocking _after_ connecting to avoid this nonsense:
     # https://stackoverflow.com/a/6206705/495611
     self._socket = socket_class(socket.AF_INET, socket.SOCK_STREAM)
+    print(os.getenv('CONTROLLER_IP', 'localhost'))
+    print(os.getenv('CONTROLLER_PORT', 8000))
     self._socket.connect((
       os.getenv('CONTROLLER_IP', 'localhost'),
       os.getenv('CONTROLLER_PORT', 8000)
