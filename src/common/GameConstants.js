@@ -2,13 +2,14 @@
 const GAME_STATE = {
   WAITING_FOR_PLAYERS: 0,
   WAITING_TO_START: 1,
-  STARTED: 2,
-  DEAD: 3
+  IN_LEVEL: 2,
+  BETWEEN_LEVELS: 3,
+  DEAD: 4
 };
 
 // Returns `true` iff the game has started.
 function gameHasStarted(state) {
-  return state >= GAME_STATE.STARTED;
+  return state >= GAME_STATE.IN_LEVEL;
 }
 
 // How long before the sun appears on the starfield.
@@ -41,13 +42,16 @@ const TIME_TO_START_MS = 10 * 1000;
 // if a player can't figure out how to perform a command, they're not prevented from joining the
 // game, they can just wait for the next command. To give them time to figure out how the game
 // works, they get double the time to perform before the game starts.
-function timeToPerformMs(state = GAME_STATE.STARTED) {
+function timeToPerformMs(state = GAME_STATE.IN_LEVEL) {
   let baseTime = 5 * 1000;
-  if (state !== GAME_STATE.STARTED) {
+  if (!gameHasStarted(state)) {
     baseTime *= 2;
   }
   return baseTime;
 }
+
+// The time to transition between levels;
+const TIME_BETWEEN_LEVELS_MS = 5 * 1000;
 
 // The time the user sees the game-over display for before the game resets.
 // thank u based rutger hauer
@@ -62,5 +66,6 @@ module.exports = {
   DANGER_DISTANCE,
   TIME_TO_START_MS,
   timeToPerformMs,
+  TIME_BETWEEN_LEVELS_MS,
   TIME_TO_DIE_MS
 };

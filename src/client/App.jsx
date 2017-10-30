@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import classNames from 'classnames';
 import CBR from 'connect-backbone-to-react';
 const { connectBackboneToReact } = CBR;
 import DangerMask from '/views/DangerMask';
@@ -8,53 +9,72 @@ import Spaceship from '/views/Spaceship';
 import Sun from '/views/Sun';
 import {
   GAME_STATE,
-  gameHasStarted,
-  SUN_INITIAL_PROGRESS,
   SUN_UPDATE_INTERVAL_MS,
-  DANGER_DISTANCE
+  DANGER_DISTANCE,
+  TIME_BETWEEN_LEVELS_MS
 } from '/GameConstants';
-const { DEAD } = GAME_STATE;
+const { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD } = GAME_STATE;
 import TimeToStart from '/views/TimeToStart';
 import Title from '/views/Title';
 
 const SPACESHIP_UPDATE_INTERVAL_MS = 300;
 
+function GameContainer(props) {
+  const classes = classNames('game', {
+    'horizontal-scroll-background': props.scrollStars
+  });
+
+  return <div className={classes}>{props.children}</div>;
+}
+
 function App(props) {
-  // Speedily update when transitioning back to the initial state.
-  const sunUpdateIntervalMs = (props.sunProgress === SUN_INITIAL_PROGRESS) ?
-    SPACESHIP_UPDATE_INTERVAL_MS : SUN_UPDATE_INTERVAL_MS;
+  switch (props.state) {
+    case WAITING_FOR_PLAYERS:
+    case WAITING_TO_START:
+      return (
+        <GameContainer>
+          <Title/>
 
-  const gameStarted = gameHasStarted(props.state);
-  const spaceshipMargin = gameStarted ?
-    // If the game is in progress move the spaceship along accordingly.
-    { marginLeft: `${props.progress}vw` } :
-    // Otherwise center it under the title.
-    { marginLeft: 'auto', left: 0, right: 0 };
+          {/* Center the ship under the title */}
+          <Spaceship style={{ left: 0, right: 0 }}/>
 
-  return (
-    <div>
-      {gameStarted && <HUD level={props.level} />}
+          <TimeToStart time={props.timeToStart}/>
+        </GameContainer>
+      );
 
-      {!gameStarted && <Title/>}
+    case IN_LEVEL:
+    case DEAD:
+      return (
+        <GameContainer>
+          <HUD level={props.level}/>
 
-      {/* HACK(jeff): Hardcode some numbers here to sync the position of the sun and the spaceship
-        * given the same values of `sunProgress` and `progress`. */}
-      <Sun style={{
-        marginLeft: `calc(-2110px + ${props.sunProgress}vw + 20vw)`,
-        // Immediately transition back to the initial state, otherwise animate.
-        transition: `all ${sunUpdateIntervalMs / 1000}s linear`}} />
+          {/* HACK(jeff): Hardcode some numbers here to sync the position of the sun and the spaceship
+            * given the same values of `sunProgress` and `progress`. */}
+          <Sun style={{
+            marginLeft: `calc(-2110px + ${props.sunProgress}vw + 20vw)`,
+            // Immediately transition back to the initial state, otherwise animate.
+            transition: `all ${SUN_UPDATE_INTERVAL_MS / 1000}s linear`}}/>
 
-      <Spaceship style={{
-        ...spaceshipMargin,
-        transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
+          <Spaceship style={{
+            marginLeft: `${props.progress}vw`,
+            transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
 
-      <TimeToStart time={props.timeToStart}/>
+          {((props.progress - props.sunProgress) <= DANGER_DISTANCE) &&
+            <DangerMask fatal={props.state === DEAD}/>
+          }
+        </GameContainer>
+      );
 
-      {((props.progress - props.sunProgress) <= DANGER_DISTANCE) &&
-        <DangerMask fatal={props.state === DEAD}/>
-      }
-    </div>
-  );
+    case BETWEEN_LEVELS:
+      return (
+        <GameContainer scrollStars>
+          <Spaceship style={{ animation: `${TIME_BETWEEN_LEVELS_MS / 1000}s ease-in 0s zoomlefttoright` }}/>
+        </GameContainer>
+      );
+
+    default:
+      throw new Error(`Unknown state: ${props.state}`);
+  }
 }
 
 function mapModelsToProps({ model }) {

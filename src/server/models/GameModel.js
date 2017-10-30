@@ -2,12 +2,13 @@ const _ = require('underscore');
 const Backbone = require('backbone');
 const defaults = require('../../common/GameModelDefaults');
 const {
-  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, STARTED, DEAD },
+  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD },
   gameHasStarted,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
   TIME_TO_START_MS,
   timeToPerformMs,
+  TIME_BETWEEN_LEVELS_MS,
   TIME_TO_DIE_MS
 } = require('../../common/GameConstants');
 
@@ -19,6 +20,8 @@ const GameModel = Backbone.Model.extend({
 
   _timeToStartInterval: null,
   _sunInterval: null,
+  _nextLevelTimeout: null,
+  _endGameTimeout: null,
 
   initialize() {
     this.panels = new Backbone.Collection();
@@ -113,7 +116,7 @@ const GameModel = Backbone.Model.extend({
           }
         }, 500);
 
-        if (this.get('state') !== STARTED) {
+        if (!gameHasStarted(this.get('state'))) {
           this._playingPanels.add(assignedPanel);
         } else {
           this.set('progress', this.get('progress') + 10);
@@ -132,6 +135,8 @@ const GameModel = Backbone.Model.extend({
       'change:state': (model, state) => {
         clearInterval(this._timeToStartInterval);
         clearInterval(this._sunInterval);
+        clearTimeout(this._nextLevelTimeout);
+        clearTimeout(this._endGameTimeout);
 
         switch (state) {
           case WAITING_FOR_PLAYERS:
@@ -150,19 +155,20 @@ const GameModel = Backbone.Model.extend({
 
             break;
 
-          case STARTED: {
-            // Discard any commands on which we are waiting (from panels that didn't report during
-            // the WAITING_TO_START phase).
-            this._commands.forEach((command) => this.panels.findWhere({ command }).unset('command'));
-            this._commands.reset();
+          case IN_LEVEL: {
+            if (this.previous('state') === WAITING_TO_START) {
+              // Discard any commands on which we are waiting (from panels that didn't report during
+              // the WAITING_TO_START phase).
+              this._resetCommands();
 
-            // Notify any panels that didn't report that they'll have to wait.
-            const nonPlayingPanels = this.panels.difference(this._playingPanels.models);
+              // Notify any panels that didn't report that they'll have to wait.
+              const nonPlayingPanels = this.panels.difference(this._playingPanels.models);
 
-            // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
-            nonPlayingPanels.forEach((panel) => panel.set('display', 'Waiting for next game...'));
+              // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
+              nonPlayingPanels.forEach((panel) => panel.set('display', 'Waiting for next game...'));
+            }
 
-            // Now give all the player panels commands.
+            // Give all the player panels commands.
             this._assignCommands();
 
             this._sunInterval = setInterval(() => {
@@ -172,10 +178,32 @@ const GameModel = Backbone.Model.extend({
             break;
           }
 
+          case BETWEEN_LEVELS:
+            // Discard any commands from the panels other than the one that finished the level.
+            this._resetCommands();
+
+            this._playingPanels.forEach((panel) => {
+              panel.set({
+                // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
+                display: 'Get ready...',
+                status: undefined
+              });
+            });
+
+            this._nextLevelTimeout = setTimeout(() => {
+              this.set({
+                state: IN_LEVEL,
+                level: this.get('level') + 1,
+                progress: 0,
+                sunProgress: _.result(this, 'defaults').sunProgress
+              });
+            }, TIME_BETWEEN_LEVELS_MS);
+
+            break;
+
           case DEAD:
             // Discard all commands.
-            this._commands.forEach((command) => this.panels.findWhere({ command }).unset('command'));
-            this._commands.reset();
+            this._resetCommands();
 
             this._playingPanels.forEach((panel) => {
               panel.set({
@@ -184,7 +212,7 @@ const GameModel = Backbone.Model.extend({
               });
             });
 
-            setTimeout(() => this._endGame(), TIME_TO_DIE_MS);
+            this._endGameTimeout = setTimeout(() => this._endGame(), TIME_TO_DIE_MS);
 
             break;
 
@@ -196,7 +224,7 @@ const GameModel = Backbone.Model.extend({
       'change:timeToStart': (model, timeToStart) => {
         if (_.isNumber(timeToStart)) {
           if (timeToStart <= 0) { // <= vs. === for safety belts.
-            this.set('state', STARTED);
+            this.set('state', IN_LEVEL);
           } else if (this.get('state') === WAITING_TO_START) { // Safety belts to avoid wiping out commands.
             this._playingPanels.forEach((panel) => {
               // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
@@ -209,11 +237,7 @@ const GameModel = Backbone.Model.extend({
       'change:progress': (model, progress) => {
         if (progress >= 100) { // >= vs. === for safety belts.
           // Level up!
-          this.set({
-            level: this.get('level') + 1,
-            progress: 0,
-            sunProgress: _.result(this, 'defaults').sunProgress
-          });
+          this.set('state', BETWEEN_LEVELS);
         }
       },
 
@@ -259,6 +283,11 @@ const GameModel = Backbone.Model.extend({
     });
   },
 
+  _resetCommands() {
+    this._commands.forEach((command) => this.panels.findWhere({ command }).unset('command'));
+    this._commands.reset();
+  },
+
   // Assigns commands to panels needing commands, which happens when:
   //
   //  1. New panels and/or controls have joined
@@ -271,11 +300,11 @@ const GameModel = Backbone.Model.extend({
 
     // Choose as many controls to manipulate as there are panels needing commands.
     // Panels waiting to start will get commands when we start.
-    // Also don't assign when we're dead.
+    // Also don't assign when we're between levels or dead.
     const panelsNeedingCommands = panels.filter((panel) => {
       return !panel.has('command') &&
         !((this.get('state') === WAITING_TO_START) && this._playingPanels.contains(panel)) &&
-        (this.get('state') !== DEAD);
+        !_.contains([BETWEEN_LEVELS, DEAD], this.get('state'));
     });
     if (_.isEmpty(panelsNeedingCommands)) return;
 
@@ -300,7 +329,7 @@ const GameModel = Backbone.Model.extend({
       // Give the player a limited time to perform commands. Once we start, skip announcing the
       // first tick so that we don't wipe out the 'Nice job!' or 'Too late!' messages from
       // completing the last command.
-      const announceStart = this.get('state') !== STARTED;
+      const announceStart = !gameHasStarted(this.get('state'));
       command.start(timeToPerformMs(this.get('state')), announceStart);
     };
 
