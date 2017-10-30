@@ -334,7 +334,7 @@ class DollPanel(PanelStateBase):
     self.input_queue = Queue.Queue()
 
     self.input_thread = threading.Thread(
-        target=poll_doll_input, args=(self.input_queue))
+        target=poll_doll_input, args=(self.input_queue,))
     self.input_thread.start()
 
   def get_state_updates(self):
@@ -360,3 +360,6 @@ class DollPanel(PanelStateBase):
   def display_message(self, message):
     """Prints the message with a prefix (to differentiate it from what the user types)."""
     print('> ' + message)
+
+  def display_status(self, data):
+    pass
