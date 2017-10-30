@@ -113,7 +113,7 @@ const GameModel = Backbone.Model.extend({
           }
         }, 500);
 
-        if (this.get('state') !== STARTED) {
+        if (!gameHasStarted(this.get('state'))) {
           this._playingPanels.add(assignedPanel);
         } else {
           this.set('progress', this.get('progress') + 10);
@@ -300,7 +300,7 @@ const GameModel = Backbone.Model.extend({
       // Give the player a limited time to perform commands. Once we start, skip announcing the
       // first tick so that we don't wipe out the 'Nice job!' or 'Too late!' messages from
       // completing the last command.
-      const announceStart = this.get('state') !== STARTED;
+      const announceStart = !gameHasStarted(this.get('state'));
       command.start(timeToPerformMs(this.get('state')), announceStart);
     };
 
