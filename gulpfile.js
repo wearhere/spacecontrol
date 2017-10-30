@@ -78,7 +78,8 @@ const build = new MultiBuild({
                 'GAME_STATE',
                 'SUN_INITIAL_PROGRESS',
                 'SUN_PROGRESS_INCREMENT',
-                'SUN_UPDATE_INTERVAL_MS'
+                'SUN_UPDATE_INTERVAL_MS',
+                'DANGER_DISTANCE'
               ]
             }
           }),

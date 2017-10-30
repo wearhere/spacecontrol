@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import CBR from 'connect-backbone-to-react';
 const { connectBackboneToReact } = CBR;
+import DangerMask from '/views/DangerMask';
 import HUD from '/views/HUD';
 import React from 'react';
 import Spaceship from '/views/Spaceship';
@@ -8,7 +9,8 @@ import Sun from '/views/Sun';
 import {
   GAME_STATE,
   SUN_INITIAL_PROGRESS,
-  SUN_UPDATE_INTERVAL_MS
+  SUN_UPDATE_INTERVAL_MS,
+  DANGER_DISTANCE
 } from '/GameConstants';
 const { STARTED } = GAME_STATE;
 import TimeToStart from '/views/TimeToStart';
@@ -45,6 +47,8 @@ function App(props) {
         transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
 
       <TimeToStart time={props.timeToStart}/>
+
+      {((props.progress - props.sunProgress) <= DANGER_DISTANCE) && <DangerMask/>}
     </div>
   );
 }

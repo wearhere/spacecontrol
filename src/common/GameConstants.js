@@ -23,6 +23,9 @@ const SUN_UPDATE_INTERVAL_MS = 5000;
 // player.
 const SUN_INITIAL_PROGRESS = -((SUN_DELAY_MS / SUN_UPDATE_INTERVAL_MS) * SUN_PROGRESS_INCREMENT);
 
+// The distance between the sun and spaceship at which a danger indicator will appear.
+const DANGER_DISTANCE = 20;
+
 // The time additional players are given to join the game after the first player has joined
 // before the game starts.
 const TIME_TO_START_MS = 10 * 1000;
@@ -45,6 +48,7 @@ module.exports = {
   SUN_INITIAL_PROGRESS,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
+  DANGER_DISTANCE,
   TIME_TO_START_MS,
   timeToPerformMs
 };
