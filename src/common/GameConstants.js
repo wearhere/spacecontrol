@@ -2,8 +2,14 @@
 const GAME_STATE = {
   WAITING_FOR_PLAYERS: 0,
   WAITING_TO_START: 1,
-  STARTED: 2
+  STARTED: 2,
+  DEAD: 3
 };
+
+// Returns `true` iff the game has started.
+function gameHasStarted(state) {
+  return state >= GAME_STATE.STARTED;
+}
 
 // How long before the sun appears on the starfield.
 const SUN_DELAY_MS = 30 * 1000;
@@ -43,12 +49,18 @@ function timeToPerformMs(state = GAME_STATE.STARTED) {
   return baseTime;
 }
 
+// The time the user sees the game-over display for before the game resets.
+// thank u based rutger hauer
+const TIME_TO_DIE_MS = 3000;
+
 module.exports = {
   GAME_STATE,
+  gameHasStarted,
   SUN_INITIAL_PROGRESS,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
   DANGER_DISTANCE,
   TIME_TO_START_MS,
-  timeToPerformMs
+  timeToPerformMs,
+  TIME_TO_DIE_MS
 };
