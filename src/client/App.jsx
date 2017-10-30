@@ -52,7 +52,6 @@ function App(props) {
             * given the same values of `sunProgress` and `progress`. */}
           <Sun style={{
             marginLeft: `calc(-2110px + ${props.sunProgress}vw + 20vw)`,
-            // Immediately transition back to the initial state, otherwise animate.
             transition: `all ${SUN_UPDATE_INTERVAL_MS / 1000}s linear`}}/>
 
           <Spaceship style={{
