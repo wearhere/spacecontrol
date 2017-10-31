@@ -3,7 +3,7 @@
 The collection of our various types of controls
 """
 
-from __future__ import division
+#from __future__ import division
 import peripherals_stacey
 from colour import Color
 
@@ -191,55 +191,55 @@ class Analog(object):
   CHANGE_THRESHOLD = 0.05
 
   """An analog input (potentiometer)"""
-  def __init__(self, device, pin, scaled=True):
+  def __init__(self, device, pin):
     self.device = device
     self.pin = pin
 
     # initialize hysterisis
-    self.prev_value = 0
-    self.value = 0
-
+    self.prev_value = 10
+    self.value = 10
+    #self.max_val = 5000
     # enable reading that pin
     self.device.enable_pin(pin)
-    self.scaled = scaled
 
   def read(self):
     cur_value = self.device.read(self.pin)
-
-    # we only save the new value if it's changed more than threshold
-    # this prevents oscillating due to analog jitter
-    change = abs(1 - self.value/cur_value)
+    if cur_value != 0:
+      # we only save the new value if it's changed more than threshold
+      # this prevents oscillating due to analog jitter
+      change = abs(1 - (float(self.value)/float(cur_value)))
+    else:
+      change = 0
     if change > self.CHANGE_THRESHOLD:
       self.prev_value = self.value
       self.value = cur_value
-
+    #print "prev: ", self.prev_value, "curr: ", self.value
     self.after_read()
 
   def after_read(self):
     pass
 
-class Slider(Analog):
+class Slider(object):
   """ Linear potentiometer """
-  def __init__(self, device, pin, num_bins):
-    Analog.__init__(self, device, pin, scaled=False)
-    self.max_val = 4095
+  def __init__(self, device, pin, num_bins, max_val=4000):
+    self.pot = Analog(device, pin)
+    self.max_val = max_val
     self.num_bins = num_bins
-    self.bin_size = self.max_val / num_bins
+    self.bin_size = self.max_val / self.num_bins
+    print "BIN SIZE: ", self.bin_size
 
-  def read_sector(self):
+  def read(self):
     """ Return the sector/bin into which the value falls"""
     try:
-      bin_id = self.read() / self.bin_size
-      return bin_id
+      self.pot.read()
+      cur_val = self.pot.value
+      bin_id = int(cur_val / self.bin_size)
+      #if bin_id != 0:
+      #  print "pin: ", self.pot.pin, " BIN: ", bin_id
+      self.value = str(bin_id)
     except:
-      print "Slider value too big: ", self.read()
-      return num_bins
-
-class RotaryMeter(Slider):
-  """Rotating potentiometer! How is this different? Unclear"""
-  def __init__(self, device, pin, num_bins):
-    Slider.__init__(self, device, pin, num_bins)
-    self.max_val = 3950
+      print "Slider value too big!"
+      self.value =  str(self.num_bins)
 
 class Accelerator(Analog):
   """A potentiometer with LEDs indicating the position"""
