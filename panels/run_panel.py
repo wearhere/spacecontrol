@@ -19,7 +19,7 @@ import sys
 
 #PANELS = [keyboard_panel.KeyboardPanel]
 #PANELS = [meringue_panel.MeringuePanel]
-PANELS = [doll_panel.DollPanel, keyboard_panel.KeyboardPanel]
+PANELS = [meringue_panel.MeringuePanel, doll_panel.DollPanel, keyboard_panel.KeyboardPanel]
 
 def main():
   parser = argparse.ArgumentParser(
