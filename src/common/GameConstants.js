@@ -47,7 +47,7 @@ function timeToPerformMs() {
 }
 
 // The time to transition between levels;
-const TIME_BETWEEN_LEVELS_MS = 5 * 1000;
+const TIME_BETWEEN_LEVELS_MS = 10 * 1000;
 
 // The time the user sees the game-over display for before the game resets.
 // thank u based rutger hauer
