@@ -42,12 +42,8 @@ const TIME_TO_START_MS = 10 * 1000;
 // if a player can't figure out how to perform a command, they're not prevented from joining the
 // game, they can just wait for the next command. To give them time to figure out how the game
 // works, they get double the time to perform before the game starts.
-function timeToPerformMs(state = GAME_STATE.IN_LEVEL) {
-  let baseTime = 5 * 1000;
-  if (!gameHasStarted(state)) {
-    baseTime *= 2;
-  }
-  return baseTime;
+function timeToPerformMs() {
+  return 15 * 1000;
 }
 
 // The time to transition between levels;
