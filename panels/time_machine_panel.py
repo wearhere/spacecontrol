@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from panel_client import PanelStateBase
+from panel_client import PanelStateBase, _validate_controls
 import scrolling_lcd
 import RPi.GPIO as GPIO
 
@@ -18,10 +18,11 @@ import RPi.GPIO as GPIO
 #
 # This is a list of all controls monitored by this control panel. As controls
 # connect/disconnect, add and remove from this list, then call `announce` again.
+tachyon_string = 'tachyon_bleed_valve_{}'
+
 CONTROL_SCHEMES = [
     {
-        'id': 'tachyon_bleed_valve_1',
-        'key': 'tbv1',
+        'id': tachyon_string.format(1),
         'state': '0',
         'actions': {
             '0': '',
@@ -29,8 +30,7 @@ CONTROL_SCHEMES = [
         },
     },
     {
-        'id': 'tachyon_bleed_valve_2',
-        'key': 'tbv2',
+        'id': tachyon_string.format(2),
         'state': '0',
         'actions': {
             '0': '',
@@ -39,15 +39,19 @@ CONTROL_SCHEMES = [
     },
 ]
 
+_validate_controls(CONTROL_SCHEMES)
+
 class TimeMachinePanel(PanelStateBase):
   """Simulate a panel using the keyboard."""
 
   def __init__(self):
     self.lcd = scrolling_lcd.ScrollingLCD()
+    self.lcd.display('Welcome, Time-Traveller!')
+    GPIO.setmode(GPIO.BCM)
     self.t1_pin = 5
     self.t2_pin = 6
     self.pins = [self.t1_pin, self.t2_pin]
-    GPIO.setmode(GPIO.BCM)
+    self.pins_to_buttons = {pin:button+1 for button, pin in enumerate(self.pins)}
 
     for pin in self.pins:
       GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -55,8 +59,7 @@ class TimeMachinePanel(PanelStateBase):
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
     for pin in self.pins:
-      if GPIO.input(pin):
-        yield 'tachyon_bleed_valve_{}'.format(pin), 1
+      yield tachyon_string.format(self.pins_to_buttons[pin]), GPIO.input(pin)
 
   def get_controls(self):
     """Must implement this function for your panel.
@@ -67,7 +70,10 @@ class TimeMachinePanel(PanelStateBase):
 
   def display_message(self, message):
     """Prints the message with a prefix (to differentiate it from what the user types)."""
+    print(message)
     self.lcd.display(str(message))
 
   def display_status(self, data):
-    self.lcd.display(str(data))
+    print(data)
+    #self.lcd.display(str(data))
+    pass

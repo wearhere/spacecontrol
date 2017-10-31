@@ -7,6 +7,7 @@ from __future__ import print_function
 
 import argparse
 import doll_panel
+from time_machine_panel import TimeMachinePanel
 import keyboard_panel
 
 from panel_client import PanelClient
@@ -16,7 +17,7 @@ import signal
 import sys
 
 
-PANELS = [doll_panel.DollPanel, keyboard_panel.KeyboardPanel]
+PANELS = [doll_panel.DollPanel, keyboard_panel.KeyboardPanel, TimeMachinePanel]
 
 def main():
   parser = argparse.ArgumentParser(
