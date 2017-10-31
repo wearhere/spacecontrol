@@ -35,7 +35,7 @@ const DANGER_DISTANCE = 20;
 
 // The time additional players are given to join the game after the first player has joined
 // before the game starts.
-const TIME_TO_START_MS = 10 * 1000;
+const TIME_TO_START_MS = 30 * 1000;
 
 // The time players are given to perform commands before the command is replaced and the ship slides
 // backwards. During the game this is done for time pressure. Before the game this is done so that
