@@ -23,27 +23,27 @@ CONTROL_SCHEMES = [
   {
     # weather: [frosty, chill, meh, hot in here, wtf] [0-4095 % 5]
     'id': 'slide_1',
-    'state': 'frosty',
+    'state': '0',
     'actions': {
-      'frosty': 'Forecast says frosty',
-      'chill': 'Forecast says chill',
-      'meh': 'The weather is meh',
-      'hot': 'It\'s getting hot in here',
-      'wtf': 'This weather is wtf'
+      '0': 'Forecast says frosty',
+      '1': 'Forecast says chill',
+      '2': 'The weather is meh',
+      '3': 'It\'s getting hot in here',
+      '4': 'This weather is wtf'
     },
   },
   {
     # hynek: [1, 2, 3, 4, 5, 6, 7] [0-4095 % 5] 
     'id': 'slide_2',
-    'state': '1',
+    'state': '0',
     'actions': {
-      '1': 'UFO on the horizon!',
-      '2': 'Walking in a crop circle',
-      '3': 'The aliens are waving to you',
-      '4': 'Alien abduction',
-      '5': 'Pinging the aliens',
-      '6': 'Extraterrestrial invasion',
-      '7': 'Extraterrestrial lovemaking'
+      '0': 'UFO on the horizon!',
+      '1': 'Walking in a crop circle',
+      '2': 'The aliens are waving to you',
+      '3': 'Alien abduction',
+      '4': 'Pinging the aliens',
+      '5': 'Extraterrestrial invasion',
+      '6': 'Extraterrestrial lovemaking'
     },
   },
   {
@@ -52,30 +52,30 @@ CONTROL_SCHEMES = [
     # at higher levels, show R G B pixel values :P
     # TODO: multiple levels of difficulty?
     'id': 'rs_1',
-    'state': 'red',
-    'action': {
-      'red': 'Strawberries!',
-      'orange': 'Orange',
-      'yellow': 'Banana',
-      'green' : 'Cucumber',
-      'blue': 'Blueberries',
-      'purple': 'Eggplant'
+    'state': '0',
+    'actions': {
+      '0': 'Strawberries!',
+      '1': 'Orange',
+      '2': 'Banana',
+      '3' : 'Cucumber',
+      '4': 'Blueberries',
+      '5': 'Eggplant'
     },
   },
   {
     # Bortle dark sky scale: [1-9] [0-3950] % 8
     'id': 'rs_2',
-    'state': '1',
-    'action': {
-      '1': 'North Pole sky',
-      '2': 'Australian outback sky',
-      '3': 'Remote countryside sky',
-      '4': 'Small suburb sky',
-      '5': 'Large suburb sky',
-      '6': 'Small city sky',
-      '7': 'Bay Area sky',
-      '8': 'Big city sky',
-      '9': 'Times Square sky'
+    'state': '0',
+    'actions': {
+      '0': 'North Pole sky',
+      '1': 'Australian outback sky',
+      '2': 'Remote countryside sky',
+      '3': 'Small suburb sky',
+      '4': 'Large suburb sky',
+      '5': 'Small city sky',
+      '6': 'Bay Area sky',
+      '7': 'Big city sky',
+      '8': 'Times Square sky'
     },
   }
 ]
@@ -114,6 +114,15 @@ class MeringuePanel(PanelStateBase):
     return self.controls
 
   def display_message(self, message):
-    """Prints the message."""
-    print(message)
+    """Prints the message with a prefix (to differentiate it from what the user types)."""
+    print('> ' + message)
+
+  def display_status(self, data):
+    """Prints the message with a prefix (to differentiate it from what the user types)."""
+    if 'message' in data:
+      # Ignore empty messages i.e. clearing the status.
+      if data['message']:
+        print('> ' + data['message'])
+    #elif 'progress' in data:
+    #  print('> ' + (' ' * int(math.floor(data['progress'] * LCD_WIDTH))))
 
