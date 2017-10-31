@@ -54,7 +54,6 @@ class ProgressLCD:
 
     def _gen_progress(self, progress):
         self._lines[self._num_rows-1] = '#' * (int(progress*self._num_cols))
-        print(self._lines)
 
 
 if __name__ == '__main__':
