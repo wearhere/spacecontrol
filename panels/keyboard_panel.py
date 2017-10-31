@@ -1,13 +1,16 @@
+# -*- coding: utf-8 -*-
 """Demonstration/debugging panel. Uses the shell for I/O."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
+import math
 import Queue
 import select
 import threading
-from panel_client import PanelStateBase, MIN_LATENCY_MS
+from panel_client import PanelStateBase, MIN_LATENCY_MS, LCD_WIDTH
 
 # A control is any object that the player can manipulate to put in one or more states. A control can
 # be anything from a button to a switch to a dial to a pair of dolls that you touch against each
@@ -80,8 +83,7 @@ CONTROL_SCHEMES = [
         # This is a shorthand form of `states`, where the first value (the array) contains the values for
         # `state`, and the second value (the string) is a "template action": the actual actions for each
         # state will be formed by replacing "%s" with the state.
-        'actions': [['0', '1', '2'], 'Set Froomulator to %s!'],
-        'type': 'switch'
+        'actions': [['0', '1', '2'], 'Set Froomulator to %s!']
     }]
 ]
 
@@ -110,7 +112,7 @@ class KeyboardPanel(PanelStateBase):
     self.kbd_thread = threading.Thread(
         target=poll_keyboard, args=(self.stop_event, self.input_queue, stdin))
     self.controls = CONTROL_SCHEMES[player_number - 1]
-    self.display_message('Conrol scheme: {}'.format(self.controls))
+    self.display_message('Control scheme: {}'.format(json.dumps(self.controls, indent=2)))
     self.kbd_thread.start()
 
   def is_button(self, item):
@@ -126,7 +128,7 @@ class KeyboardPanel(PanelStateBase):
     try:
       item, action = self.input_queue.get(block=False).split(' ')
       if self.is_button(item):
-        # hack to simulate the behavior of a real button. 
+        # hack to simulate the behavior of a real button.
         self.input_queue.put((item + ' 0'))
       yield item, action
     except ValueError:
@@ -143,8 +145,17 @@ class KeyboardPanel(PanelStateBase):
     return self.controls
 
   def display_message(self, message):
-    """Prints the message."""
-    print(message)
+    """Prints the message with a prefix (to differentiate it from what the user types)."""
+    print('> ' + message)
+
+  def display_status(self, data):
+    """Prints the message with a prefix (to differentiate it from what the user types)."""
+    if 'message' in data:
+      # Ignore empty messages i.e. clearing the status.
+      if data['message']:
+        print('> ' + data['message'])
+    elif 'progress' in data:
+      print('> ' + ('█' * int(math.floor(data['progress'] * LCD_WIDTH))))
 
   def __del__(self):
     self.stop_event.set()

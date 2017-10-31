@@ -15,67 +15,118 @@ const runSequence = require('run-sequence');
 const sourcemaps = require('gulp-sourcemaps');
 const watch = require('gulp-watch');
 
-const TARGETS = ['app'];
+const TARGETS = [
+  'app',
+  'keyboardPanel'
+];
 
 const build = new MultiBuild({
   gulp,
   targets: TARGETS,
-  entry: (target) => `src/client/main-${target}.jsx`,
-  rollupOptions: {
-    external: ['jquery', 'backbone', 'underscore', 'react', 'react-dom'],
-    globals: {
-      jquery: '$',
-      underscore: '_',
-      backbone: 'Backbone',
-      react: 'React',
-      'react-dom': 'ReactDOM'
-    },
-    plugins: [
-      /**
-       * Specify environment for React per
-       * https://facebook.github.io/react/docs/optimizing-performance.html#rollup and
-       * https://github.com/rollup/rollup/issues/487#issuecomment-177596512.
-       */
-      replace({
-        'process.env.NODE_ENV': '"development"'
-      }),
-      rootImport({
-        root: [`${__dirname}/src/client`],
-        // Because we omit the .js most of the time, we put it first, and
-        // explicitly specify that it should attempt the lack of extension
-        // only after it tries to resolve with the extension.
-        extensions: ['.js', '.jsx', '']
-      }),
-      nodeResolve(),
-      commonJS({
-        include: 'node_modules/**',
-      }),
-      babel({
+  entry: (target) => {
+    if (target === 'keyboardPanel') {
+      return 'panels/keyboardPanel.jsx';
+    } else {
+      return `src/client/main-${target}.jsx`;
+    }
+  },
+  rollupOptions: (target) => {
+    if (target === 'keyboardPanel') {
+      return {
         plugins: [
-          'external-helpers',
-          'syntax-jsx',
-          'transform-react-jsx',
-          'transform-react-display-name'
+          babel({
+            plugins: [
+              ['transform-react-jsx', { pragma: 'h' }],
+              'babel-plugin-transform-function-bind'
+            ],
+            exclude: 'node_modules/**'
+          })
         ],
-        exclude: 'node_modules/**'
-      })
-    ],
-    format: 'iife',
-    sourceMap: true
+        format: 'cjs'
+      };
+    } else {
+      return {
+        external: ['jquery', 'backbone', 'underscore', 'react', 'react-dom'],
+        globals: {
+          jquery: '$',
+          underscore: '_',
+          backbone: 'Backbone',
+          react: 'React',
+          'react-dom': 'ReactDOM'
+        },
+        plugins: [
+          /**
+           * Specify environment for React per
+           * https://facebook.github.io/react/docs/optimizing-performance.html#rollup and
+           * https://github.com/rollup/rollup/issues/487#issuecomment-177596512.
+           */
+          replace({
+            'process.env.NODE_ENV': '"development"'
+          }),
+          rootImport({
+            root: [`${__dirname}/src/client`, `${__dirname}/src/common`],
+            // Because we omit the .js most of the time, we put it first, and
+            // explicitly specify that it should attempt the lack of extension
+            // only after it tries to resolve with the extension.
+            extensions: ['.js', '.jsx', '']
+          }),
+          nodeResolve(),
+          commonJS({
+            include: ['node_modules/**', 'src/common/**'],
+            namedExports: {
+              'src/common/GameConstants.js': [
+                'GAME_STATE',
+                'gameHasStarted',
+                'SUN_INITIAL_PROGRESS',
+                'SUN_PROGRESS_INCREMENT',
+                'SUN_UPDATE_INTERVAL_MS',
+                'DANGER_DISTANCE',
+                'TIME_BETWEEN_LEVELS_MS'
+              ]
+            }
+          }),
+          babel({
+            // Don't transpile to ES5, we can assume this will only run in modern browsers.
+            plugins: [
+              'external-helpers',
+              'syntax-jsx',
+              'transform-react-jsx',
+              'transform-react-display-name',
+              'transform-object-rest-spread'
+            ],
+            exclude: 'node_modules/**'
+          })
+        ],
+        format: 'iife',
+        sourceMap: true
+      };
+    }
   },
   output: (target, input) => {
-    return input
-      .pipe(rename(`build-${target}.js`))
-      .pipe(sourcemaps.write('.'))
-      .pipe(gulp.dest('public'));
+    if (target === 'keyboardPanel') {
+      return input
+        .pipe(rename('keyboardPanel.js'))
+        .pipe(gulp.dest('panels'));
+    } else {
+      return input
+        .pipe(rename(`build-${target}.js`))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest('public'));
+    }
   }
 });
 
 gulp.task('clean', function() {
-  const js = _.flatten(TARGETS.map(target => [
-    `public/build-${target}.js`,
-    `public/build-${target}.js.map`,
-  ]));
+  const js = _.flatten(TARGETS.map(target => {
+    if (target === 'keyboardPanel') {
+      return 'panels/keyboardPanel.js';
+    } else {
+      return [
+        `public/build-${target}.js`,
+        `public/build-${target}.js.map`,
+      ];
+    }
+  }));
   return del(js);
 });
 
@@ -89,7 +140,7 @@ gulp.task('watch', function() {
   });
 
   // JS and JSX.
-  watch('src/client/**/*', (file) => build.changed(file.path));
+  watch(['src/client/**/*', 'panels/keyboardPanel.jsx'], (file) => build.changed(file.path));
 
   watch('public/**')
     .pipe(cache('buildCache', { optimizeMemory: true })
@@ -102,7 +153,7 @@ gulp.task('server', function() {
   nodemon({
     script: 'src/server/app.js',
     ext: 'js, html',
-    watch: ['src/server/**/*']
+    watch: ['src/server/**/*', 'src/common/**/*']
   })
     .on('restart', function() {
       // Workaround: https://github.com/JacksonGariety/gulp-nodemon/issues/40

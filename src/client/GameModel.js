@@ -1,9 +1,8 @@
 import { PublicationModel } from 'backbone-publication';
+import defaults from '/GameModelDefaults';
 
 const GameModel = PublicationModel.extend({
-  defaults: {
-    progress: 0
-  }
+  defaults
 });
 
 export default GameModel;

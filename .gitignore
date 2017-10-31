@@ -5,3 +5,4 @@ public/build-*.js
 
 *.sw?
 *.pyc
+/panels/keyboardPanel.js

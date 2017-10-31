@@ -2,6 +2,8 @@ import json
 import itertools as it
 import unittest
 import mock
+from StringIO import StringIO
+import sys
 
 import panel_client
 
@@ -38,6 +40,7 @@ class TestIOSubprocesses(unittest.TestCase):
   def setUp(self):
     self.action_queue = mock.Mock()
     self.message_queue = mock.Mock()
+    self.panel_io_started = mock.Mock()
 
   def test_server_io(self):
     num_actions = 10
@@ -71,8 +74,13 @@ class TestIOSubprocesses(unittest.TestCase):
     }) for x in range(num_messages))
 
 
-  def test_panel_io(self):
+  # Disable control validation for the purposes of this test.
+  @mock.patch('panel_client._validate_controls')
+  def test_panel_io(self, mock_validate_controls):
     panel_state = mock.Mock()
+    # Since this is a mock, it'll respond to the `getattr('panel_main')` call as if this actually
+    # defined it, so we must explicitly suppress the check.
+    panel_state.panel_main = False
     updates = [[update] for update in zip('abcedf', (x for x in range(6)))]
     panel_state.get_state_updates.side_effect = it.chain(updates, [[None]])
 
@@ -80,13 +88,162 @@ class TestIOSubprocesses(unittest.TestCase):
     self.message_queue.get.side_effect = lambda block: msg
 
     panel_client._panel_io_subprocess_main(
-        lambda: panel_state, self.action_queue, self.message_queue)
+        lambda: panel_state, self.action_queue, self.message_queue, self.panel_io_started)
 
     panel_state.display_message.assert_called_with(msg['data']['display'])
 
     self.action_queue.put.assert_has_calls(
         mock.call(panel_client._make_update_message(update[0]))
         for update in updates)
+
+
+class TestControlValidation(unittest.TestCase):
+
+  @mock.patch('sys.stdout', new_callable=StringIO) # https://stackoverflow.com/a/31171719/495611
+  @mock.patch('sys.exit')
+  def testPanelExitsIfValidationFails(self, mock_exit, mock_stdout):
+    panel_state = mock.Mock()
+
+    client = panel_client.PanelClient(lambda: panel_state)
+    client.start()
+
+    self.assertEqual(mock_stdout.getvalue(), 'Could not start panel IO; aborting.\n')
+    sys.exit.assert_called_with(1)
+
+  def testLonghandForm(self):
+    panel_client._validate_controls([{
+      'id': 'defenestrator',
+      'state': '0',
+      'actions': {
+          '0': '',
+          '1': 'Defenestrate the aristocracy!'
+      }
+    }])
+
+  def testShorthandForm(self):
+    panel_client._validate_controls([{
+      'id': 'Froomulator',
+      'state': '0',
+      'actions': [['0', '1', '2'], 'Set Froomulator to %s!']
+    }])
+
+  def formatStringsOnlySupportedInShorthandForm(self):
+    with self.assertRaisesRegexp(Exception, 'Format strings are only supported in the shorthand form of `actions`'):
+      panel_client._validate_controls([{
+        'id': 'defenestrator',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Defenestrate %s!'
+        }
+      }])
+
+  def formatStringRequiredInShorthandForm(self):
+    with self.assertRaisesRegexp(Exception, 'Shorthand `actions` is malformed'):
+      panel_client._validate_controls([{
+        'id': 'Froomulator',
+        'state': '0',
+        'actions': [['0', '1', '2'], 'Set Froomulator!']
+      }])
+
+  def testRequireControlKeys(self):
+    with self.assertRaisesRegexp(Exception, '`state` is missing'):
+      panel_client._validate_controls([{
+        'id': 'defenestrator',
+        'actions': {
+          '0': '',
+          '1': 'Defenestrate the aristocracy!'
+        }
+      }])
+
+  # Useful for playing the game via the CLI, see where `type: 'button` is read by
+  # `keyboard_panel.py`. Might also be used by other panel subclasses.
+  def testIgnoreUnknownControlKeys(self):
+    panel_client._validate_controls([{
+      'id': 'defenestrator',
+      'state': '0',
+      'actions': {
+          '0': '',
+          '1': 'Defenestrate the aristocracy!'
+      },
+      'type': 'button'
+    }])
+
+  def testStateMustBeString(self):
+    with self.assertRaisesRegexp(Exception, '`state` is not a string'):
+      panel_client._validate_controls([{
+        'id': 'defenestrator',
+        'state': 0,
+        'actions': {
+            0: '',
+            1: 'Defenestrate the aristocracy!'
+        }
+      }])
+
+    with self.assertRaisesRegexp(Exception, 'State in `actions` is not a string'):
+      panel_client._validate_controls([{
+        'id': 'defenestrator',
+        'state': '0',
+        'actions': {
+            '0': '',
+            1: 'Defenestrate the aristocracy!'
+        }
+      }])
+
+    with self.assertRaisesRegexp(Exception, 'State in `actions` is not a string'):
+      panel_client._validate_controls([{
+        'id': 'Froomulator',
+        'state': '0',
+        'actions': [['0', 1], 'Set Froomulator to %s!']
+      }])
+
+  def testStateMustBeInActions(self):
+    with self.assertRaisesRegexp(Exception, '`state` not present in `actions`'):
+      panel_client._validate_controls([{
+        'id': 'defenestrator',
+        'state': '2',
+        'actions': {
+            '0': '',
+            '1': 'Defenestrate the aristocracy!'
+        },
+        'type': 'button'
+      }])
+
+    with self.assertRaisesRegexp(Exception, '`state` not present in `actions`'):
+      panel_client._validate_controls([{
+        'id': 'Froomulator',
+        'state': '3',
+        'actions': [['0', '1', '2'], 'Set Froomulator to %s!']
+      }])
+
+  def testStatesDontHaveToBeNumeric(self):
+    panel_client._validate_controls([{
+      'id': 'octo',
+      'state': 'nothing',
+      'actions': {
+          'nothing': '',
+          'nipple': 'Octo bite raven girl nipple!',
+          'mouth': 'Octo kiss raven girl mouth!'
+      }
+    }])
+
+  def testIdsMustBeUnique(self):
+    with self.assertRaisesRegexp(Exception, 'Control ids are not unique'):
+      panel_client._validate_controls([{
+        'id': 'defenestrator',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Defenestrate the aristocracy!'
+        }
+      }, {
+        'id': 'defenestrator',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Defenestrate the aristocracy!'
+        }
+      }])
 
 
 if __name__ == '__main__':
