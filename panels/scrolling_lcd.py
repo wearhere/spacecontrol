@@ -45,8 +45,8 @@ class ScrollingLCD:
             self._lines.append(message_padded[:self._num_cols])
             message_padded = message_padded[self._num_cols:]
         self._lines = self._lines[-self._num_rows:]
-            
-                
+
+
 if __name__ == '__main__':
     #do a short test/demo
     lcd = ScrollingLCD()
