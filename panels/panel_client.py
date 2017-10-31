@@ -106,7 +106,7 @@ def _validate_controls(controls):
 
 
 def _make_update_message(update):
-  return {'message': 'set-state', 'data': {'id': update[0], 'state': update[1]}}
+  return {'message': 'set-state', 'data': {'id': str(update[0]), 'state': str(update[1])}}
 
 
 def _make_announce_message(controls):

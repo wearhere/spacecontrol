@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import json
 import Queue
+from progress_lcd import ProgressLCD
 import select
 import serial
 import threading
@@ -118,7 +119,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Octopus touches the Rat\'s mouth'
+            '1': 'Octopus nibbles the Rat\'s tail'
         }
     },
     {
@@ -127,7 +128,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Octopus tickles the Rat\'s tail'
+            '1': 'Octopus brushes Rat\'s tail with tentacle'
         }
     },
     {
@@ -298,7 +299,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Octopus plays with Madeline\'s nipples'
+            '1': 'Octopus plays with Madeline\'s nipples with its tentacle'
         }
     },
     {
@@ -332,10 +333,11 @@ class DollPanel(PanelStateBase):
 
   def __init__(self):
     self.input_queue = Queue.Queue()
-
     self.input_thread = threading.Thread(
         target=poll_doll_input, args=(self.input_queue,))
     self.input_thread.start()
+    self.lcd = ProgressLCD(rs_pin=25, en_pin=24, d4_pin=23, d5_pin=17,
+      d6_pin=21, d7_pin=22)
 
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
@@ -359,7 +361,9 @@ class DollPanel(PanelStateBase):
 
   def display_message(self, message):
     """Prints the message with a prefix (to differentiate it from what the user types)."""
-    print('> ' + message)
+    self.lcd.display_message(message)
+    print('> {0}'.format(message))
 
   def display_status(self, data):
-    pass
+    self.lcd.display_progress(data['progress'])
+    print('Do {0}'.format(data))
