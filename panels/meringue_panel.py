@@ -25,11 +25,11 @@ CONTROL_SCHEMES = [
     'id': 'slide_1',
     'state': '0',
     'actions': {
-      '0': 'Forecast says frosty',
-      '1': 'Forecast says chill',
-      '2': 'The weather is meh',
-      '3': 'It\'s getting hot in here',
-      '4': 'This weather is wtf'
+      '0': 'It\'s fucking freezing',
+      '1': 'Kinda chilly in here',
+      '2': 'The weather is mild and pleasant',
+      '3': 'It\'s getting warm in here',
+      '4': 'OMG SO FUCKING HOT IN HERE'
     },
   },
   {
@@ -37,13 +37,13 @@ CONTROL_SCHEMES = [
     'id': 'slide_2',
     'state': '0',
     'actions': {
-      '0': 'UFO on the horizon!',
-      '1': 'Walking in a crop circle',
-      '2': 'The aliens are waving to you',
-      '3': 'Alien abduction',
-      '4': 'Pinging the aliens',
-      '5': 'Extraterrestrial invasion',
-      '6': 'Extraterrestrial lovemaking'
+      '0': 'First kind: UFO on the horizon!',
+      '1': 'Second kind: in a crop circle',
+      '2': 'Third kind: aliens waving to you',
+      '3': 'Fourth kind: alien abduction',
+      '4': 'Fifth kind: Pinging the aliens',
+      '5': 'Sixth kind: Extraterrestrial invasion',
+      '6': 'Seventh kind: Extraterrestrial lovemaking'
     },
   },
   {
@@ -54,10 +54,10 @@ CONTROL_SCHEMES = [
     'id': 'rs_1',
     'state': '0',
     'actions': {
-      '0': 'Strawberries!',
+      '0': 'Strawberries',
       '1': 'Orange',
       '2': 'Banana',
-      '3' : 'Cucumber',
+      '3': 'Cucumber',
       '4': 'Blueberries',
       '5': 'Eggplant'
     },
@@ -77,7 +77,56 @@ CONTROL_SCHEMES = [
       '7': 'Big city sky',
       '8': 'Times Square sky'
     },
-  }
+  },
+  {
+    # Kardashev scale of civilization [1-5] [3950] % 5
+    'id': 'rs_3_kardashev',
+    'state': 0,
+    'actions': {
+      '0': 'Type I: planetary civilization with a parent star',
+      '1': 'Type II: planet harvests full energy of parent star',
+      '2': 'Type III: civilization controls entire galaxy',
+      '3': 'Type IV: civilization controls entire universe',
+      '4': 'Type V: civilization controls collections of universes!',
+    },
+  },
+  # LIGHT UP BUTTONS
+  {
+    # top button blue
+    'id': 'b_top_blue',
+    'state': 0,
+    'actions': {
+      '0': '',
+      '1': 'Launch Infinite Improbability Drive!',
+    },
+  },
+  {
+    # top button white
+    'id': 'b_top_white',
+    'state': 0,
+    'actions': {
+      '0': '',
+      '1': 'Say thanks for all the fish',
+    },
+  },
+  {
+    # top button green
+    'id': 'b_top_green',
+    'state': 0,
+    'actions': {
+      '0': '',
+      '1': 'Subvert the dominant paradigm',
+    },
+  },
+  {
+    # top button yellow
+    'id': 'b_top_yellow',
+    'state': 0,
+    'actions': {
+      '0': '',
+      '1': 'Shuffle off this mortal coil',
+    },
+  },
 ]
         #'actions': [['0', '1', '2'], 'Set Froomulator to %s!'],
         # TODO: do we care about the type of controller?
