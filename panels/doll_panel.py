@@ -35,7 +35,15 @@ touch_def = {
     '8': 'girl_nipple',
     '9': 'girl_pussy',
     '10': 'blood_a',
-    '11': 'blood_o'
+    '11': 'blood_o',
+    '12': 'syringe',
+    '13': 'clown_butt',
+    '14': 'bird_bite'
+}
+
+special_def = {
+    '0': 'clown_belly',
+    '1': 'bird_shake'
 }
 
 # touch_def = ['rat_bite', 'rat_body', 'rat_tail', 'cat_bite', 'cat_claw', 'octo_bite', 'octo_tentacle',
@@ -129,6 +137,16 @@ CONTROL_SCHEMES = [
         'actions': {
             '0': '',
             '1': 'Infuse O-type blood into Rat'
+        }
+    },
+    {
+        'id': 'rat_body_syringe',
+        'state': '-1',
+        'actions': {
+            '-1': '',
+            '0': 'Inject Manganate into the Rat\'s body',
+            '1': 'Inject L-Theanine into the Rat\'s body',
+            '2': 'Inject Hemoglobin into the Rat\'s body',
         }
     },
     {
@@ -249,6 +267,16 @@ CONTROL_SCHEMES = [
         'actions': {
             '0': '',
             '1': 'Feed O-type blood to Kitteh'
+        }
+    },
+    {
+        'id': 'cat_bite_syringe',
+        'state': '-1',
+        'actions': {
+            '-1': '',
+            '0': 'Feed Kitty some Manganate',
+            '1': 'Force feed the Cat L-Theanine',
+            '2': 'Inject Hemoglobin into the Cat\'s mouth',
         }
     },
     {
@@ -378,6 +406,7 @@ class DollPanel(PanelStateBase):
         print('Setting {0} to {1}'.format(id, action))
         control = [c['id'] for c in CONTROL_SCHEMES if c['id'] == id]
         if len(control) > 0:
+            print('Sending: {0} to {1}'.format(id, action))
             yield control[0], action
         return
     except ValueError:
