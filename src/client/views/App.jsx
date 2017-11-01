@@ -5,6 +5,7 @@ const { connectBackboneToReact } = CBR;
 import DangerMask from '/views/DangerMask';
 import HUD from '/views/HUD';
 import React from 'react';
+import Scoreboard from '/views/Scoreboard';
 import Spaceship from '/views/Spaceship';
 import Sun from '/views/Sun';
 import {
@@ -13,7 +14,14 @@ import {
   DANGER_DISTANCE,
   TIME_BETWEEN_LEVELS_MS
 } from '/GameConstants';
-const { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD } = GAME_STATE;
+const {
+  WAITING_FOR_PLAYERS,
+  WAITING_TO_START,
+  IN_LEVEL,
+  BETWEEN_LEVELS,
+  DEAD,
+  SCOREBOARD
+} = GAME_STATE;
 import TimeToStart from '/views/TimeToStart';
 import Title from '/views/Title';
 
@@ -68,6 +76,13 @@ function App(props) {
       return (
         <GameContainer scrollStars>
           <Spaceship style={{ animation: `${TIME_BETWEEN_LEVELS_MS / 1000}s ease-in 0s zoomlefttoright` }}/>
+        </GameContainer>
+      );
+
+    case SCOREBOARD:
+      return (
+        <GameContainer>
+          <Scoreboard level={props.level}/>
         </GameContainer>
       );
 

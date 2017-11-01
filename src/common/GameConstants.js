@@ -4,7 +4,8 @@ const GAME_STATE = {
   WAITING_TO_START: 1,
   IN_LEVEL: 2,
   BETWEEN_LEVELS: 3,
-  DEAD: 4
+  DEAD: 4,
+  SCOREBOARD: 5
 };
 
 // Returns `true` iff the game has started.
@@ -57,6 +58,9 @@ const TIME_BETWEEN_LEVELS_MS = 5 * 1000;
 // thank u based rutger hauer
 const TIME_TO_DIE_MS = 3000;
 
+// The number of high scores to record.
+const MAX_SCOREBOARD_LENGTH = 10;
+
 module.exports = {
   GAME_STATE,
   gameHasStarted,
@@ -67,5 +71,6 @@ module.exports = {
   TIME_TO_START_MS,
   timeToPerformMs,
   TIME_BETWEEN_LEVELS_MS,
-  TIME_TO_DIE_MS
+  TIME_TO_DIE_MS,
+  MAX_SCOREBOARD_LENGTH
 };

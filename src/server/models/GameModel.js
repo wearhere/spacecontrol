@@ -2,7 +2,7 @@ const _ = require('underscore');
 const Backbone = require('backbone');
 const defaults = require('../../common/GameModelDefaults');
 const {
-  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD },
+  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD, SCOREBOARD },
   gameHasStarted,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
@@ -67,7 +67,7 @@ const GameModel = Backbone.Model.extend({
       remove: () => {
         if (this._playingPanels.isEmpty()) {
           if (gameHasStarted(this.get('state'))) {
-            this._endGame();
+            this._resetGame();
           } else {
             this.set({
               timeToStart: null,
@@ -212,7 +212,16 @@ const GameModel = Backbone.Model.extend({
               });
             });
 
-            this._endGameTimeout = setTimeout(() => this._endGame(), TIME_TO_DIE_MS);
+            this._endGameTimeout = setTimeout(() => this.set('state', SCOREBOARD), TIME_TO_DIE_MS);
+
+            break;
+
+          case SCOREBOARD:
+            // Clear the 'Too late' message.
+            this._playingPanels.forEach((panel) => panel.unset('display'));
+
+            // TODO(jeff): Provide a way for the user to reset the game after looking at the scoreboard
+            // https://github.com/wearhere/spacecontrol/issues/39
 
             break;
 
@@ -361,7 +370,7 @@ const GameModel = Backbone.Model.extend({
     }
   },
 
-  _endGame() {
+  _resetGame() {
     this.set(_.result(this, 'defaults'));
     this._playingPanels.reset();
   }
