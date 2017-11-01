@@ -376,7 +376,7 @@ class DollPanel(PanelStateBase):
         id = '{0}_{1}'.format(touch_def[first], touch_def[second])
 
         print('Setting {0} to {1}'.format(id, action))
-        control = [c.id for c in CONTROL_SCHEMES if c.id == id]
+        control = [c['id'] for c in CONTROL_SCHEMES if c['id'] == id]
         if len(control) > 0:
             yield control[0], action
         return
