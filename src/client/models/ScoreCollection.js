@@ -20,7 +20,9 @@ const ScoreCollection = Backbone.Collection.extend({
   isHighScore(score) {
     if (this.isEmpty()) return true;
 
-    return (this.length < this._maxLength) || (score >= _.min(this.pluck('score')));
+    // TODO(jeff): Accept scores that are >= the min once we can truncate the list:
+    // https://github.com/wearhere/spacecontrol/issues/61
+    return (this.length < this._maxLength) || (score > _.min(this.pluck('score')));
   }
 });
 
