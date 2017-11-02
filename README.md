@@ -139,11 +139,3 @@ venue will have reliable WiFi. The panel scripts (`panel.py`) will be launched w
 
 [spaceship control panels]: https://github.com/igor47/spaceboard
 [latest Node]: https://nodejs.org/en/
-
-## TODO
-
-- Timeouts
-  - Control sends timeout along with message
-  - Panel tells control if timeout elapses before new message
-- Game join / start mechanism
-- Game end mechanism
