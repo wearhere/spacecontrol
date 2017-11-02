@@ -2,7 +2,7 @@ const _ = require('underscore');
 const Backbone = require('backbone');
 const defaults = require('../../common/GameModelDefaults');
 const {
-  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD },
+  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD, SCOREBOARD },
   gameHasStarted,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
@@ -74,7 +74,7 @@ const GameModel = Backbone.Model.extend({
       remove: () => {
         if (this._playingPanels.isEmpty()) {
           if (gameHasStarted(this.get('state'))) {
-            this._endGame();
+            this._resetGame();
           } else {
             this.set({
               timeToStart: null,
@@ -149,6 +149,7 @@ const GameModel = Backbone.Model.extend({
           case WAITING_FOR_PLAYERS:
             // Reset the panels so that players may signal they're ready.
             this.panels.forEach((panel) => panel.unset('status'));
+            this._playingPanels.reset();
             this._assignCommands();
 
             break;
@@ -219,7 +220,15 @@ const GameModel = Backbone.Model.extend({
               });
             });
 
-            this._endGameTimeout = setTimeout(() => this._endGame(), TIME_TO_DIE_MS);
+            this._endGameTimeout = setTimeout(() => this.set('state', SCOREBOARD), TIME_TO_DIE_MS);
+
+            break;
+
+          case SCOREBOARD:
+            // Clear the 'Too late' message.
+            this._playingPanels.forEach((panel) => panel.unset('display'));
+
+            // We don't put any sort of timer in here for resetting the game--the user can hit space.
 
             break;
 
@@ -368,9 +377,8 @@ const GameModel = Backbone.Model.extend({
     }
   },
 
-  _endGame() {
+  _resetGame() {
     this.set(_.result(this, 'defaults'));
-    this._playingPanels.reset();
   }
 }, {
   _instances: new Map(),

@@ -14,6 +14,18 @@ h3 {
   font-size: 4em;
 }
 
+table {
+  font-size: 3em;
+  border-spacing: 50px 10px;
+  margin: auto;
+  left: 0;
+  right: 0;
+}
+
+td {
+  text-align: left;
+}
+
 @keyframes horizontalscrollbackground {
   from { background-position: 15vw 10vw; }
   to { background-position: 115vw 10vw; }
@@ -80,4 +92,88 @@ h3 {
   from { margin-left: -30vw; }
   /* Tuned to convey the right speed over an animation of TIME_BETWEEN_LEVELS_MS */
   to { margin-left: 320vw; }
+}
+
+.scoreboard {
+  text-align: center;
+
+  /* Important for the vertical scroll animations below */
+  position: fixed;
+  height: 100%;
+
+  /* Consequence of using fixed positioning */
+  left: 0;
+  right: 0;
+
+  --scroll-to-player-score-duration: 5s;
+}
+
+@keyframes scroll-to-player-score {
+  from { transform: translateY(100vh); }
+  /* Nice top margin after scrolling. */
+  to { transform: translateY(25vh); }
+}
+
+.scoreboard[data-end-scroll="player-score"] {
+  transform: translateY(100vh);
+  animation: var(--scroll-to-player-score-duration) linear forwards scroll-to-player-score;
+}
+
+@keyframes scroll-to-other-scores {
+  from { transform: translateY(100vh); }
+  /* The 5em leaves the scoreboard with a nice top margin after scrolling. */
+  to { transform: translateY(-100vh); }
+}
+
+.scoreboard[data-end-scroll="other-scores"] {
+  transform: translateY(100vh);
+  animation: 15s linear forwards scroll-to-other-scores;
+}
+
+.scoreboard[data-end-scroll="other-scores"] .player-score {
+  margin-bottom: 100vh;
+}
+
+.scoreboard[data-end-scroll="other-scores-including-player"] {
+  /* Roughly sync the position of the scoreboard including the player, with the board without */
+  transform: translateY(10vh);
+}
+
+@keyframes show {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.new-high-score {
+  opacity: 0;
+
+  animation: 0s var(--scroll-to-player-score-duration) linear forwards show;
+}
+
+.new-high-score h3 {
+  /* Neon glow from http://enjoycss.com/gallery/text_effects/39 */
+  text-shadow: 0 0 10px rgba(255,255,255,1) , 0 0 20px rgba(255,255,255,1) , 0 0 40px #ff00de , 0 0 70px #ff00de , 0 0 80px #ff00de , 0 0 100px #ff00de ;
+}
+
+.new-high-score input {
+  color: white;
+  text-align: center;
+  font-size: 3em;
+  background-color: transparent;
+  padding-bottom: 5px;
+  border-width: 0 0 3px;
+}
+
+.new-high-score input:focus {
+  outline-width: 0;
+}
+
+.new-high-score input::placeholder {
+  color: silver;
+}
+
+/* I could not get the CSS animation for this working. Nor sure if this is bug in Chrome that
+ * `::placeholder` cannot be animated */
+.new-high-score input.flash-white::placeholder {
+  color: white;
 }
