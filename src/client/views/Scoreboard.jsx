@@ -118,6 +118,8 @@ class NameInput extends React.Component {
   }
 
   onKeyDown(e) {
+    e.stopPropagation();
+
     if ((e.key === 'Escape') && this.props.onEscape) {
       this.props.onEscape();
     }

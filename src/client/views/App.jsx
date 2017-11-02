@@ -35,66 +35,92 @@ function GameContainer(props) {
   return <div className={classes}>{props.children}</div>;
 }
 
-function App(props) {
-  switch (props.state) {
-    case WAITING_FOR_PLAYERS:
-    case WAITING_TO_START:
-      return (
-        <GameContainer>
-          <Title/>
+class App extends React.Component {
+  constructor() {
+    super();
 
-          {/* Center the ship under the title */}
-          <Spaceship style={{ left: 0, right: 0 }}/>
+    this.onKeyDown = ::this.onKeyDown;
+  }
 
-          <TimeToStart time={props.timeToStart}/>
-        </GameContainer>
-      );
+  componentDidMount() {
+    $(window).on('keydown', this.onKeyDown);
+  }
 
-    case IN_LEVEL:
-    case DEAD:
-      return (
-        <GameContainer>
-          <HUD level={props.level}/>
+  componentWillUnmount() {
+    $(window).off('keydown', this.onKeyDown);
+  }
 
-          {/* HACK(jeff): Hardcode some numbers here to sync the position of the sun and the spaceship
-            * given the same values of `sunProgress` and `progress`. */}
-          <Sun style={{
-            marginLeft: `calc(-2110px + ${props.sunProgress}vw + 20vw)`,
-            transition: `all ${SUN_UPDATE_INTERVAL_MS / 1000}s linear`}}/>
+  onKeyDown(e) {
+    if (e.key === ' ') {
+      this.props.reset();
+    }
+  }
 
-          <Spaceship style={{
-            marginLeft: `${props.progress}vw`,
-            transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
+  render() {
+    const props = this.props;
 
-          {((props.progress - props.sunProgress) <= DANGER_DISTANCE) &&
-            <DangerMask fatal={props.state === DEAD}/>
-          }
-        </GameContainer>
-      );
+    switch (props.state) {
+      case WAITING_FOR_PLAYERS:
+      case WAITING_TO_START:
+        return (
+          <GameContainer>
+            <Title/>
 
-    case BETWEEN_LEVELS:
-      return (
-        <GameContainer scrollStars>
-          <Spaceship style={{ animation: `${TIME_BETWEEN_LEVELS_MS / 1000}s ease-in 0s zoomlefttoright` }}/>
-        </GameContainer>
-      );
+            {/* Center the ship under the title */}
+            <Spaceship style={{ left: 0, right: 0 }}/>
 
-    case SCOREBOARD:
-      return (
-        <GameContainer>
-          <Scoreboard level={props.level}/>
-        </GameContainer>
-      );
+            <TimeToStart time={props.timeToStart}/>
+          </GameContainer>
+        );
 
-    default:
-      throw new Error(`Unknown state: ${props.state}`);
+      case IN_LEVEL:
+      case DEAD:
+        return (
+          <GameContainer>
+            <HUD level={props.level}/>
+
+            {/* HACK(jeff): Hardcode some numbers here to sync the position of the sun and the spaceship
+              * given the same values of `sunProgress` and `progress`. */}
+            <Sun style={{
+              marginLeft: `calc(-2110px + ${props.sunProgress}vw + 20vw)`,
+              transition: `all ${SUN_UPDATE_INTERVAL_MS / 1000}s linear`}}/>
+
+            <Spaceship style={{
+              marginLeft: `${props.progress}vw`,
+              transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
+
+            {((props.progress - props.sunProgress) <= DANGER_DISTANCE) &&
+              <DangerMask fatal={props.state === DEAD}/>
+            }
+          </GameContainer>
+        );
+
+      case BETWEEN_LEVELS:
+        return (
+          <GameContainer scrollStars>
+            <Spaceship style={{ animation: `${TIME_BETWEEN_LEVELS_MS / 1000}s ease-in 0s zoomlefttoright` }}/>
+          </GameContainer>
+        );
+
+      case SCOREBOARD:
+        return (
+          <GameContainer>
+            <Scoreboard level={props.level}/>
+          </GameContainer>
+        );
+
+      default:
+        throw new Error(`Unknown state: ${props.state}`);
+    }
   }
 }
 
 function mapModelsToProps({ model }) {
-  return _.pick(model.attributes, [
+  return _.extend(_.pick(model.attributes, [
     'state', 'timeToStart', 'level', 'progress', 'sunProgress'
-  ]);
+  ]), {
+    reset: ::model.reset
+  });
 }
 
 export default connectBackboneToReact(mapModelsToProps)(App);

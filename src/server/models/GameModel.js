@@ -142,6 +142,7 @@ const GameModel = Backbone.Model.extend({
           case WAITING_FOR_PLAYERS:
             // Reset the panels so that players may signal they're ready.
             this.panels.forEach((panel) => panel.unset('status'));
+            this._playingPanels.reset();
             this._assignCommands();
 
             break;
@@ -372,7 +373,6 @@ const GameModel = Backbone.Model.extend({
 
   _resetGame() {
     this.set(_.result(this, 'defaults'));
-    this._playingPanels.reset();
   }
 }, {
   _instances: new Map(),
