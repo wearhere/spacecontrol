@@ -221,8 +221,7 @@ const GameModel = Backbone.Model.extend({
             // Clear the 'Too late' message.
             this._playingPanels.forEach((panel) => panel.unset('display'));
 
-            // TODO(jeff): Provide a way for the user to reset the game after looking at the scoreboard
-            // https://github.com/wearhere/spacecontrol/issues/39
+            // We don't put any sort of timer in here for resetting the game--the user can hit space.
 
             break;
 
