@@ -15,7 +15,8 @@ export default class ScoreboardContainer extends React.Component {
     this.state = {
       highScore: null,
       isLoaded: false,
-      saveInProgress: false
+      saveInProgress: false,
+      hasSkippedHighScore: false
     };
   }
 
@@ -47,9 +48,13 @@ export default class ScoreboardContainer extends React.Component {
     }));
   }
 
+  onSkipScore() {
+    this.setState({ hasSkippedHighScore: true });
+  }
+
   render() {
     const level = this.props.level;
-    const { highScore, isLoaded, saveInProgress } = this.state;
+    const { highScore, isLoaded, saveInProgress, hasSkippedHighScore } = this.state;
 
     // Don't show anything until the scoreboard loads.
     if (!isLoaded) return null;
@@ -59,7 +64,7 @@ export default class ScoreboardContainer extends React.Component {
 
     const scores = this.scores.toJSON();
 
-    if (hasSavedScore) {
+    if (hasSavedScore || hasSkippedHighScore) {
       // Immediately transition to the scoreboard.
       return (
         <div className='scoreboard' data-end-scroll='other-scores-including-player'>
@@ -73,7 +78,8 @@ export default class ScoreboardContainer extends React.Component {
             <div>
               <h2 className='player-score'>You made it to level {level}</h2>
 
-              <NewHighScoreForm disabled={saveInProgress} onSubmit={::this.onSubmitScore}/>
+              <NewHighScoreForm disabled={saveInProgress} onSubmit={::this.onSubmitScore}
+                onEscape={::this.onSkipScore}/>
             </div>
           ) : (
             <div>
@@ -94,7 +100,7 @@ function NewHighScoreForm(props) {
       <h3>New high score!</h3>
 
       <form onSubmit={props.onSubmit}>
-        <NameInput disabled={props.disabled} name='name' focus/>
+        <NameInput disabled={props.disabled} name='name' onEscape={props.onEscape} focus/>
       </form>
     </div>
   );
@@ -111,6 +117,12 @@ class NameInput extends React.Component {
     clearInterval(this._flashPlaceholderInterval);
   }
 
+  onKeyDown(e) {
+    if ((e.key === 'Escape') && this.props.onEscape) {
+      this.props.onEscape();
+    }
+  }
+
   render() {
     return (
       <input
@@ -119,6 +131,7 @@ class NameInput extends React.Component {
         name={this.props.name}
         type="text"
         placeholder='Enter your name'
+        onKeyDown={::this.onKeyDown}
       />
     );
   }
