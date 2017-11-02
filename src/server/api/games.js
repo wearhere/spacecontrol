@@ -9,7 +9,7 @@ router.param('id', function(req, res, next, id) {
   next();
 });
 
-router.put('/:id', function(req, res) {
+router.patch('/:id', function(req, res) {
   req.game.set(req.body);
   res.status(204).end();
 });

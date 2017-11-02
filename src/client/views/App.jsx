@@ -52,7 +52,15 @@ class App extends React.Component {
 
   onKeyDown(e) {
     if (e.key === ' ') {
-      this.props.reset();
+      if (this.props.state === WAITING_TO_START) {
+        const timeToStart = this.props.timeToStart;
+        if (_.isNumber(timeToStart) && (timeToStart > 5 * 1000)) {
+          // Skip to 5 seconds to start.
+          this.props.set('timeToStart', 5 * 1000);
+        }
+      } else {
+        this.props.reset();
+      }
     }
   }
 
@@ -119,6 +127,7 @@ function mapModelsToProps({ model }) {
   return _.extend(_.pick(model.attributes, [
     'state', 'timeToStart', 'level', 'progress', 'sunProgress'
   ]), {
+    set: (...args) => model.save(...args),
     reset: ::model.reset
   });
 }
