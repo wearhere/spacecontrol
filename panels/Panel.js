@@ -15,7 +15,10 @@ class Panel extends Component {
             this.display = data.message;
             break;
           case 'set-status':
-            this.status = data;
+            this.status = data.message;
+            break;
+          case 'set-progress':
+            this.progress = data.value;
             break;
         }
       })
@@ -37,7 +40,11 @@ class Panel extends Component {
     throw new Error('Subclass must override');
   }
 
-  set status(data) {
+  set status(message) {
+    throw new Error('Subclass must override');
+  }
+
+  set progress(value) {
     throw new Error('Subclass must override');
   }
 

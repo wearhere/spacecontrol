@@ -1,3 +1,4 @@
+const _ = require('underscore');
 const Backbone = require('backbone');
 const ControlCollection = require('./ControlCollection');
 const MessageClient = require('../utils/MessageClient');
@@ -8,6 +9,8 @@ const PanelModel = Backbone.Model.extend({
     command: null
   },
 
+  _statusTimeout: null,
+
   initialize(attrs, { connection }) {
     this.controls = new ControlCollection();
 
@@ -17,8 +20,12 @@ const PanelModel = Backbone.Model.extend({
       this._send('set-display', { message });
     });
 
-    this.on('change:status', (model, status = { message: '' }) => {
-      this._send('set-status', status);
+    this.on('change:status', (model, message = '') => {
+      this._send('set-status', { message });
+    });
+
+    this.on('change:progress', (model, value = 0) => {
+      this._send('set-progress', { value });
     });
 
     this.on('change:command', (model, command) => {
@@ -28,6 +35,22 @@ const PanelModel = Backbone.Model.extend({
         this.set('display', command.get('action'));
       }
     });
+  },
+
+  setStatus(status, timeout) {
+    clearTimeout(this._statusTimeout);
+    this.set({ status });
+    if (_.isNumber(timeout)) {
+      this._statusTimeout = setTimeout(() => {
+        this.unset('status');
+      }, timeout);
+    }
+  },
+
+  clearStatusAndProgress() {
+    clearTimeout(this._statusTimeout);
+    this.unset('status');
+    this.unset('progress');
   },
 
   _setUpConnection(connection) {

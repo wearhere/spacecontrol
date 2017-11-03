@@ -93,12 +93,10 @@ const GameModel = Backbone.Model.extend({
         const assignedPanel = panels.findWhere({ command });
 
         if (timeToPerform > 0) {
-          assignedPanel.set('status', { progress: timeToPerform / timeToPerformMs(this.get('state')) });
+          assignedPanel.set('progress', timeToPerform / timeToPerformMs(this.get('state')));
         } else {
           if (gameStarted) {
-            // No need to clear this status after display since it will shortly be replaced by the
-            // new timer.
-            assignedPanel.set('status', { message: 'Too late!' });
+            assignedPanel.setStatus('Too late!', 500);
             this.set('progress', Math.max(this.get('progress') - 10, 0));
           }
 
@@ -116,12 +114,7 @@ const GameModel = Backbone.Model.extend({
 
         // Push the status before unsetting the command, as that will cause a new command to be
         // assigned and sent.
-        assignedPanel.set('status', { message: 'Nice job!' });
-        setTimeout(() => {
-          if (_.isEqual(assignedPanel.get('status'), { message: 'Nice job!' })) {
-            assignedPanel.unset('status');
-          }
-        }, 500);
+        assignedPanel.setStatus('Nice job!', 500);
 
         if (!gameHasStarted(this.get('state'))) {
           this._playingPanels.add(assignedPanel);
@@ -148,7 +141,7 @@ const GameModel = Backbone.Model.extend({
         switch (state) {
           case WAITING_FOR_PLAYERS:
             // Reset the panels so that players may signal they're ready.
-            this.panels.forEach((panel) => panel.unset('status'));
+            this.panels.invoke('clearStatusAndProgress');
             this._playingPanels.reset();
             this._assignCommands();
 
@@ -191,11 +184,9 @@ const GameModel = Backbone.Model.extend({
             this._resetCommands();
 
             this._playingPanels.forEach((panel) => {
-              panel.set({
-                // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
-                display: 'Get ready...',
-                status: undefined
-              });
+              panel.clearStatusAndProgress();
+              // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
+              panel.set('display', 'Get ready...');
             });
 
             this._nextLevelTimeout = setTimeout(() => {
@@ -214,10 +205,8 @@ const GameModel = Backbone.Model.extend({
             this._resetCommands();
 
             this._playingPanels.forEach((panel) => {
-              panel.set({
-                display: 'Too late!!!',
-                status: undefined
-              });
+              panel.clearStatusAndProgress();
+              panel.set('display', 'Too late!!!');
             });
 
             this._endGameTimeout = setTimeout(() => this.set('state', SCOREBOARD), TIME_TO_DIE_MS);
@@ -342,11 +331,8 @@ const GameModel = Backbone.Model.extend({
       panel.set({ command });
       this._commands.add(command);
 
-      // Give the player a limited time to perform commands. Once we start, skip announcing the
-      // first tick so that we don't wipe out the 'Nice job!' or 'Too late!' messages from
-      // completing the last command.
-      const announceStart = !gameHasStarted(this.get('state'));
-      command.start(timeToPerformMs(this.get('state')), announceStart);
+      // Give the player a limited time to perform commands.
+      command.start(timeToPerformMs(this.get('state')));
     };
 
     // If we're waiting to start, we assign only same-panel commands, so that we may detect if
