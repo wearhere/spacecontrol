@@ -142,7 +142,7 @@ gulp.task('watch', function() {
   });
 
   // JS and JSX.
-  watch(['src/client/**/*', 'panels/keyboardPanel.jsx'], (file) => build.changed(file.path));
+  watch(['src/client/**/*', 'src/common/**/*', 'panels/keyboardPanel.jsx'], (file) => build.changed(file.path));
 
   watch('public/**')
     .pipe(cache('buildCache', { optimizeMemory: true })

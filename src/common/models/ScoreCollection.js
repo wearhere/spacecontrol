@@ -1,16 +1,23 @@
-import _ from 'underscore';
-import Backbone from 'backbone';
-import { MAX_SCOREBOARD_LENGTH } from '../../common/GameConstants';
+const _ = require('underscore');
+const Backbone = require('backbone');
+const { MAX_SCOREBOARD_LENGTH } = require('../GameConstants');
 
 const ScoreModel = Backbone.Model.extend({
   defaults: {
     name: null,
-    score: 0
+    score: 0,
+    createdAt: null
   },
 
   parse(resp) {
     const attrs = _.clone(resp);
     attrs.createdAt = new Date(attrs.createdAt);
+    return attrs;
+  },
+
+  toJSON() {
+    const attrs = _.clone(this.attributes);
+    if (attrs.createdAt) attrs.createdAt = attrs.createdAt.toISOString();
     return attrs;
   }
 });
@@ -21,6 +28,18 @@ const ScoreCollection = Backbone.Collection.extend({
 
   initialize(models, { maxLength = MAX_SCOREBOARD_LENGTH } = {}) {
     this._maxLength = maxLength;
+  },
+
+  add(...args) {
+    let models = ScoreCollection.__super__.add.call(this, ...args);
+
+    const modelsToRemove = _.difference(this.models, this.slice(0, this._maxLength));
+    if (!_.isEmpty(modelsToRemove)) {
+      this.remove(modelsToRemove);
+      models = _.difference(models, modelsToRemove);
+    }
+
+    return models;
   },
 
   // Sort first by score, then by createdAt, both descending.
@@ -44,10 +63,8 @@ const ScoreCollection = Backbone.Collection.extend({
   isHighScore(score) {
     if (this.isEmpty()) return true;
 
-    // TODO(jeff): Accept scores that are >= the min once we can truncate the list:
-    // https://github.com/wearhere/spacecontrol/issues/61
-    return (this.length < this._maxLength) || (score > _.min(this.pluck('score')));
+    return (this.length < this._maxLength) || (score >= _.min(this.pluck('score')));
   }
 });
 
-export default ScoreCollection;
+module.exports = ScoreCollection;
