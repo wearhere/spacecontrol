@@ -7,10 +7,7 @@ export default class ScoreboardContainer extends React.Component {
   constructor() {
     super();
 
-    this.scores = new ScoreCollection([], {
-      // Sort scores descending.
-      comparator: (model) => -model.get('score')
-    });
+    this.scores = new ScoreCollection([]);
 
     this.state = {
       highScore: null,

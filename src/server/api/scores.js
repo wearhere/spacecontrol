@@ -2,6 +2,7 @@ const _ = require('underscore');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const ScoreCollection = require('../../common/models/ScoreCollection');
 const uuidv4 = require('uuid/v4');
 
 const router = express.Router();
@@ -22,13 +23,22 @@ router.get('/', function(req, res) {
 });
 
 router.post('/', function(req, res) {
+  const score = _.extend({}, req.body, {
+    id: uuidv4(),
+    createdAt: new Date().toISOString()
+  });
+
   readScores((err, scores) => {
     if (err) return res.status(500).end();
 
-    const score = _.defaults({}, req.body, { id: uuidv4() });
-    scores.push(score);
+    const scoreColl = new ScoreCollection(scores, { parse: true });
+    if (!scoreColl.isHighScore(score.score)) {
+      return res.status(403).json({ message: 'Not a high score!' });
+    }
+    // Will automatically truncate the collection if necessary.
+    scoreColl.add(score, { parse: true });
 
-    writeScores(scores, (err2) => {
+    writeScores(scoreColl.toJSON(), (err2) => {
       if (err2) return res.status(500).end();
 
       res.json(score);
