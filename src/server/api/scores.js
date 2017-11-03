@@ -25,7 +25,10 @@ router.post('/', function(req, res) {
   readScores((err, scores) => {
     if (err) return res.status(500).end();
 
-    const score = _.defaults({}, req.body, { id: uuidv4() });
+    const score = _.extend({}, req.body, {
+      id: uuidv4(),
+      createdAt: new Date().toISOString()
+    });
     scores.push(score);
 
     writeScores(scores, (err2) => {
