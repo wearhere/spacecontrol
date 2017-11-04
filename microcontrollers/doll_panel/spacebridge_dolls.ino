@@ -1,6 +1,11 @@
-const byte dolls = 9;
+const byte touch = 15;
+const byte testtubes = 3;
 const byte idx = 0;
-int pins[dolls] = {PB12, PB13, PB14, PB15, PA8, PA9, PA10, PB6, PB7};
+int pins[touch] = {PB12, PB13, PB14, PB15, PA8, PA9, PA10, PB6, PB7, PB8, PB9, PB11, PA7};
+int syringe = PA7;
+int syringe_key = 12;
+int tubes[testtubes] = {PB10, PB1, PB0};
+int color = -1;
 
 int lastIOn;
 int lastXOn;
@@ -8,26 +13,32 @@ int lastIOff;
 int lastXOff;
 int timeElapsedOn = 0;
 int timeElapsedOff = 0;
+int timeElapsedTime = 5000;
+int timeElapsedColor = 10000;
 
-int state[dolls][dolls];
+int state[touch][touch];
 
 void setup() {
   Serial.begin(9600);
-  for (byte c=0; c<dolls; c++) {
+  for (byte c=0; c<touch; c++) {
     pinMode(pins[c], INPUT_PULLUP);
-    for (byte d=0; d<dolls; d++) {
+    for (byte d=0; d<touch; d++) {
       state[c][d] = 0;
     }
+  }
+  for (byte t=0; t<touch; t++) {
+    pinMode(tubes[t], INPUT_PULLUP);
   }
 }
 
 void loop() {
   delay(100);
-  for (byte c=0; c<dolls; c++) {
+  // Sensing Touch
+  for (byte c=0; c<touch; c++) {
     pinMode(pins[c], OUTPUT);
     digitalWrite(pins[c], LOW);
     delay(10);
-    for (byte r=0; r<dolls; r++) {
+    for (byte r=0; r<touch; r++) {
       if (r != c) {
         int i = min(r, c);
         int x = max(r, c);
@@ -35,8 +46,13 @@ void loop() {
         if (digitalRead(pins[r])==LOW) {
           if (s != 1) {
             state[i][x] = 1;
-            if (!(lastIOn == i && lastXOn == x) || timeElapsedOn > 5000) {
-              Serial.print("1,");
+            if (!(lastIOn == i && lastXOn == x) || timeElapsedOn > timeElapsedTime) {
+              if (i == syringe_key || x == syringe_key) {
+                Serial.print(color);
+              } else {
+                Serial.print("1");
+              }
+              Serial.print(",");
               Serial.print(i);
               Serial.print(" ");
               Serial.print(x);
@@ -49,8 +65,14 @@ void loop() {
         } else {
           if (s != 0) {
             state[i][x] = 0;
-            if (!(lastIOff == i && lastXOff == x) || timeElapsedOff > 5000) {
-              Serial.print("0,");
+            if (!(lastIOff == i && lastXOff == x) || timeElapsedOff > timeElapsedTime) {
+              if (i == syringe_key || x == syringe_key) {
+                Serial.print("-1");
+                color = -1;
+              } else {
+                Serial.print("0");
+              }
+              Serial.print(",");
               Serial.print(i);
               Serial.print(" ");
               Serial.print(x);
@@ -67,4 +89,15 @@ void loop() {
     timeElapsedOff = timeElapsedOff + 100;
     pinMode(pins[c], INPUT_PULLUP);
   }
+  
+  // Sensing Test Tube Colors
+  pinMode(syringe, OUTPUT);
+  digitalWrite(syringe, LOW);
+  delay(10);
+  for (byte t=0; t<testtubes; t++) {
+    if (digitalRead(tubes[t])==LOW) {
+      color = t;
+    }
+  }
+  pinMode(syringe, INPUT_PULLUP);
 }
