@@ -226,7 +226,6 @@ class Slider(object):
     self.max_val = max_val
     self.num_bins = num_bins
     self.bin_size = self.max_val / self.num_bins
-    print "BIN SIZE: ", self.bin_size
 
   def read(self):
     """ Return the sector/bin into which the value falls"""
@@ -234,11 +233,10 @@ class Slider(object):
       self.pot.read()
       cur_val = self.pot.value
       bin_id = int(cur_val / self.bin_size)
-      #if bin_id != 0:
-      #  print "pin: ", self.pot.pin, " BIN: ", bin_id
+      #print "pin: ", self.pot.pin, " BIN: ", bin_id
       self.value = str(bin_id)
     except:
-      print "Slider value too big!"
+      #print "Slider value too big!"
       self.value =  str(self.num_bins)
 
 class Accelerator(Analog):

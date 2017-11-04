@@ -124,6 +124,59 @@ CONTROL_SCHEMES = [
       '1': 'Shuffle off this mortal coil',
     },
   },
+  # SMALL LEFT BUTTONS
+  {
+    'id': 'b_left_blue',
+    'state': '0',
+    'actions': {
+      '0': '',
+      '1': 'Small blue button on the left',
+    },
+  },
+  {
+    'id': 'b_left_green',
+    'state': '0',
+    'actions': {
+      '0': '',
+      '1': 'Small green button on the left',
+    },
+  },
+  {
+    'id': 'b_left_black',
+    'state': '0',
+    'actions': {
+      '0': '',
+      '1': 'Small blue button on the left',
+    },
+  },
+  # TRIPLE SWITCHES
+  {
+    'id': 'tongue_tsw',
+    'state': '0',
+    'actions': {
+      '0': 'leave the tongue in neutral',
+      '1': 'lick all the way up',
+      '2': 'lick all the way down',
+    },
+  },
+  {
+    'id': 'light_blue_sw',
+    'state': '0',
+    'actions': {
+      '0': 'leave the light blue dick in neutral',
+      '1': 'light blue dick all the way up',
+      '2': 'light blue dick all the way down',
+    },
+  },
+  {
+    'id': 'big_balls_sw',
+    'state': '0',
+    'actions': {
+      '0': 'leave the big ball dick in neutral',
+      '1': 'big ball dick all  the way up',
+      '2': 'big ball dick all the way down',
+    },
+  },
 ]
         #'actions': [['0', '1', '2'], 'Set Froomulator to %s!'],
         # TODO: do we care about the type of controller?
