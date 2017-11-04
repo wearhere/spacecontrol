@@ -326,7 +326,7 @@ CONTROL_SCHEMES = [
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Octopus plays with Madeline\'s nipples'
+            '1': 'Octopus nibbles Madeline\'s nipples'
         }
     },
     {
