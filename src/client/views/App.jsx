@@ -7,6 +7,7 @@ import HUD from '/views/HUD';
 import React from 'react';
 import Scoreboard from '/views/Scoreboard';
 import Spaceship from '/views/Spaceship';
+import Status from '/views/Status';
 import Sun from '/views/Sun';
 import {
   GAME_STATE,
@@ -77,7 +78,9 @@ class App extends React.Component {
             {/* Center the ship under the title */}
             <Spaceship style={{ left: 0, right: 0 }}/>
 
-            <TimeToStart time={props.timeToStart}/>
+            {props.timeToStart ?
+              <TimeToStart time={props.timeToStart}/> :
+              <Status>Players, to your panels!</Status>}
           </GameContainer>
         );
 
@@ -96,6 +99,8 @@ class App extends React.Component {
             <Spaceship style={{
               marginLeft: `${props.progress}vw`,
               transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
+
+            <Status>Hit space to reset game</Status>
 
             {((props.progress - props.sunProgress) <= DANGER_DISTANCE) &&
               <DangerMask fatal={props.state === DEAD}/>
