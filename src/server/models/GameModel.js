@@ -313,54 +313,53 @@ const GameModel = Backbone.Model.extend({
     });
     if (_.isEmpty(panelsNeedingCommands)) return;
 
-    const controlsToPanels = new WeakMap();
-    const allControls = panels.reduce((controls, panel) => {
-      panel.controls.forEach((control) => {
-        controlsToPanels.set(control, panel);
-        controls.push(control);
-      });
-      return controls;
-    }, []);
+    const activeControls = this._commands.pluck('control');
+    const inactiveControlsByPanel = new Map();
+    panels.each((panel) => {
+      const inactiveControls = panel.controls.difference(activeControls);
+      if (!_.isEmpty(inactiveControls)) {
+        inactiveControlsByPanel.set(panel, inactiveControls);
+      }
+    });
 
-    const inactiveControls = _.difference(allControls, this._commands.pluck('control'));
+    panelsNeedingCommands.forEach((panel) => {
+      let panelToAssign, controlsToAssign;
 
-    let controlsToAssign;
+      // If we're waiting to start, we assign only same-panel commands, so that we may detect if
+      // a player is actually at the panel. Otherwise we assign cross-panel commands too, for most
+      // shouting.
+      //
+      // When we choose cross-panel commands, we choose a panel first, _then_ a control from that
+      // panel, rather than sampling from _all_ panels, in order to try to more evenly distribute
+      // commands between panels i.e. players (even if one panel has a ton of controls).
+      if (gameStarted) {
+        panelToAssign = _.sample([...inactiveControlsByPanel.keys()]);
+      } else {
+        panelToAssign = panel;
+      }
 
-    const assignControl = (panel, control) => {
+      controlsToAssign = inactiveControlsByPanel.get(panelToAssign);
+
+      const control = _.sample(controlsToAssign);
+
+      // We might have run out of controls.
+      if (!control) return;
+
+      // Remove this control (and potentially panel) from the set to assign.
+      controlsToAssign = _.without(controlsToAssign, control);
+      if (_.isEmpty(controlsToAssign)) {
+        inactiveControlsByPanel.delete(panelToAssign);
+      } else {
+        inactiveControlsByPanel.set(panel, controlsToAssign);
+      }
+
       const command = control.getCommand();
       panel.set({ command });
       this._commands.add(command);
 
       // Give the player a limited time to perform commands.
       command.start(timeToPerformMs(this.get('state')));
-    };
-
-    // If we're waiting to start, we assign only same-panel commands, so that we may detect if
-    // a player is actually at the panel. Otherwise we assign cross-panel commands too, for most
-    // shouting.
-    if (gameStarted) {
-      controlsToAssign = _.sample(inactiveControls, panelsNeedingCommands.length);
-
-      panelsNeedingCommands.forEach((panel) => {
-        const control = controlsToAssign.pop();
-
-        // There could theoretically be fewer inactive controls than panels.
-        if (control) assignControl(panel, control);
-      });
-    } else {
-      panelsNeedingCommands.forEach((panel) => {
-        controlsToAssign = _.filter(inactiveControls, (control) => {
-          const pnl = controlsToPanels.get(control);
-          return pnl === panel;
-        });
-
-        const control = _.sample(controlsToAssign);
-
-        // This panel might have zero controls, either because it hasn't announced yet or because
-        // it's not configured right.
-        if (control) assignControl(panel, control);
-      });
-    }
+    });
   },
 
   _resetGame() {
