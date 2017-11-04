@@ -163,12 +163,9 @@ class MeringuePanel(PanelStateBase):
     """Prints the message with a prefix (to differentiate it from what the user types)."""
     print('> ' + message)
 
-  def display_status(self, data):
+  def display_status(self, message):
     """Prints the message with a prefix (to differentiate it from what the user types)."""
-    if 'message' in data:
-      # Ignore empty messages i.e. clearing the status.
-      if data['message']:
-        print('> ' + data['message'])
-    #elif 'progress' in data:
-    #  print('> ' + (' ' * int(math.floor(data['progress'] * LCD_WIDTH))))
+    print('> ' + message)
 
+  def display_progress(self, value):
+    pass
