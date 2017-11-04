@@ -232,6 +232,8 @@ const GameModel = Backbone.Model.extend({
             this.set('state', IN_LEVEL);
           } else if (this.get('state') === WAITING_TO_START) { // Safety belts to avoid wiping out commands.
             this._playingPanels.forEach((panel) => {
+              panel.clearStatusAndProgress();
+
               // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
               panel.set('display', `Game will start in ${timeToStart / 1000}...`);
             });
