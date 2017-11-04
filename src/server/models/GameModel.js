@@ -27,7 +27,12 @@ const GameModel = Backbone.Model.extend({
     this.panels = new Backbone.Collection();
     this.listenTo(this.panels, {
       add: (panel) => {
-        this._assignCommands();
+        if (gameHasStarted(this.get('state'))) {
+          // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
+          panel.set('display', 'Waiting for next game...');
+        } else {
+          this._assignCommands();
+        }
 
         this.listenTo(panel.controls, {
           update: (controls, { changes: { added, removed } }) => {
