@@ -1,5 +1,7 @@
 body {
   color: white;
+  /* TODO(jeff): Arcade font: https://github.com/wearhere/spacecontrol/issues/62; */
+  font-family: serif;
 }
 
 h1 {
