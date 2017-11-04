@@ -55,7 +55,8 @@ class KeyboardPanel extends Panel {
 
     this.state = {
       display: '',
-      status: null,
+      status: '',
+      progress: 0,
       input: ''
     };
   }
@@ -68,21 +69,15 @@ class KeyboardPanel extends Panel {
     this.setState({ display: message });
   }
 
-  set status(data) {
-    this.setState({ status: data });
+  set status(message) {
+    this.setState({ status: message });
+  }
+
+  set progress(value) {
+    this.setState({ progress: value });
   }
 
   render(props, state) {
-    let status;
-    if (state.status) {
-      const { message, progress } = state.status;
-      if (message) {
-        status = message;
-      } else if (progress) {
-        status = <ProgressBar columns={LCD_WIDTH} percent={progress} />;
-      }
-    }
-
     return (
       <div>
         <div>
@@ -93,7 +88,8 @@ class KeyboardPanel extends Panel {
 
         <div>
           <Text red>{state.display}</Text><br/>
-          {status}
+          <span>{state.status}</span><br/>
+          {_.isNumber(state.progress) && <ProgressBar columns={LCD_WIDTH} percent={state.progress} />}
         </div>
         <br/>
 

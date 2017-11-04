@@ -6,7 +6,9 @@
     ],
     "file_exclude_patterns": [
       "public/build-*.js",
-      "public/build-*.js.map"
+      "public/build-*.js.map",
+      "public/lib.js",
+      "src/server/scores.json"
     ]
   }],
   "settings": {

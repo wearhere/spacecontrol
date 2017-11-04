@@ -73,8 +73,10 @@ There are several functions you must implement:
 1. `get_state_updates` - should return any changes to panel state since the last call to this function. (hint: consider using PanelStateBase.diff_states).
 2. `get_controls` - should return the panel's available controls.
 3. `display_message` - show a message to the user.
-4. `display_status` - show a secondary, "status" message to the user. This message takes multiple
-forms--see the notes on the `'set_status`' message below.
+4. `display_status` - show a secondary, "status" message to the user.
+5. `display_progress` - Display a progress bar to the user.
+
+See the next section for recommendations on how the status and progress are to be displayed.
 
 You can instead define a `panel_main` method if you prefer to run arbitrary code (see next section).
 
@@ -101,12 +103,16 @@ entire panels dropping out.)
 When an event with `message: 'set-display'` is received, the panel should display the value of
 `data.message` on its attached display&mdash;this is the command for the player to perform.
 
-When an event with `message: 'set-status'` is received:
+When an event with `message: 'set-status'` is received, the panel should display the value of
+`data.message` on its attached display at the bottom of its display.
 
-* if `data` contains the key `message`, the panel should display `data['message']` at the bottom of
-its attached display.
-* otherwise, if `data` contains the key `progress`, the panel should display a progress bar at the
-bottom of its display, of width `floor(data['progress'] * LCD_WIDTH)`.
+When an event with `message: 'set-progress'` is received, the panel should display a progress bar
+at the bottom of its display, of width `floor(data['progress'] * LCD_WIDTH)`.
+
+*Ideally*, the panel would be able to display a display message, a status message, and a progress
+bar simultaneously. If the display is not tall enough to permit this, status messages should
+replace the progress bar, as status messages are temporary and the server will update the progress
+bar after a second anyway.
 
 When a control is manipulated, the panel should send an event like
 
@@ -139,11 +145,3 @@ venue will have reliable WiFi. The panel scripts (`panel.py`) will be launched w
 
 [spaceship control panels]: https://github.com/igor47/spaceboard
 [latest Node]: https://nodejs.org/en/
-
-## TODO
-
-- Timeouts
-  - Control sends timeout along with message
-  - Panel tells control if timeout elapses before new message
-- Game join / start mechanism
-- Game end mechanism

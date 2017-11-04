@@ -22,10 +22,29 @@ from panel_client import PanelStateBase, MIN_LATENCY_MS
 #
 # This is a list of all controls monitored by this control panel. As controls
 # connect/disconnect, add and remove from this list, then call `announce` again.
+
+touch_def = {
+    '0': 'rat_bite',
+    '1': 'rat_body',
+    '2': 'rat_tail',
+    '3': 'cat_bite',
+    '4': 'cat_claw',
+    '5': 'octo_bite',
+    '6': 'octo_tentacle',
+    '7': 'girl_bite',
+    '8': 'girl_nipple',
+    '9': 'girl_pussy',
+    '10': 'blood_a',
+    '11': 'blood_o'
+}
+
+# touch_def = ['rat_bite', 'rat_body', 'rat_tail', 'cat_bite', 'cat_claw', 'octo_bite', 'octo_tentacle',
+#            'girl_bite', 'girl_nipple', 'girl_pussy', 'blood_a', 'blood_o', 'syringe', 'clown_leg',
+#            'bird_bite']
+
 CONTROL_SCHEMES = [
     {
         'id': 'rat_bite_rat_tail',
-        'key': '0 1',
         'state': '0',
         'actions': {
             '0': '',
@@ -34,7 +53,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_cat_bite',
-        'key': '0 2',
         'state': '0',
         'actions': {
             '0': '',
@@ -43,7 +61,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_cat_claw',
-        'key': '0 3',
         'state': '0',
         'actions': {
             '0': '',
@@ -52,7 +69,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_octo_bite',
-        'key': '0 4',
         'state': '0',
         'actions': {
             '0': '',
@@ -61,7 +77,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_octo_tentacle',
-        'key': '0 5',
         'state': '0',
         'actions': {
             '0': '',
@@ -70,7 +85,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_bite',
-        'key': '0 6',
         'state': '0',
         'actions': {
             '0': '',
@@ -79,7 +93,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_nipple',
-        'key': '0 7',
         'state': '0',
         'actions': {
             '0': '',
@@ -88,7 +101,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_pussy',
-        'key': '0 8',
         'state': '0',
         'actions': {
             '0': '',
@@ -96,8 +108,31 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'rat_body_octo_tentacle',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Octopus inserts tentacle into Rat\'s body'
+        }
+    },
+    {
+        'id': 'rat_body_blood_a',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Infuse A-type blood into Rat'
+        }
+    },
+    {
+        'id': 'rat_body_blood_o',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Infuse O-type blood into Rat'
+        }
+    },
+    {
         'id': 'rat_tail_cat_bite',
-        'key': '1 2',
         'state': '0',
         'actions': {
             '0': '',
@@ -106,7 +141,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_cat_claw',
-        'key': '1 3',
         'state': '0',
         'actions': {
             '0': '',
@@ -115,7 +149,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_octo_bite',
-        'key': '1 4',
         'state': '0',
         'actions': {
             '0': '',
@@ -124,7 +157,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_octo_tentacle',
-        'key': '1 5',
         'state': '0',
         'actions': {
             '0': '',
@@ -133,7 +165,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_bite',
-        'key': '1 6',
         'state': '0',
         'actions': {
             '0': '',
@@ -142,7 +173,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_nipple',
-        'key': '1 7',
         'state': '0',
         'actions': {
             '0': '',
@@ -151,7 +181,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_pussy',
-        'key': '1 8',
         'state': '0',
         'actions': {
             '0': '',
@@ -160,7 +189,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_cat_claw',
-        'key': '2 3',
         'state': '0',
         'actions': {
             '0': '',
@@ -169,7 +197,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_octo_bite',
-        'key': '2 4',
         'state': '0',
         'actions': {
             '0': '',
@@ -178,7 +205,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_octo_tentacle',
-        'key': '2 5',
         'state': '0',
         'actions': {
             '0': '',
@@ -187,7 +213,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_bite',
-        'key': '2 6',
         'state': '0',
         'actions': {
             '0': '',
@@ -196,7 +221,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_nipple',
-        'key': '2 7',
         'state': '0',
         'actions': {
             '0': '',
@@ -205,7 +229,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_pussy',
-        'key': '2 8',
         'state': '0',
         'actions': {
             '0': '',
@@ -213,8 +236,23 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'cat_bite_blood_a',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Feed A-type blood to Cat'
+        }
+    },
+    {
+        'id': 'cat_bite_blood_o',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Feed O-type blood to Kitteh'
+        }
+    },
+    {
         'id': 'cat_claw_octo_bite',
-        'key': '3 4',
         'state': '0',
         'actions': {
             '0': '',
@@ -223,7 +261,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_octo_tentacle',
-        'key': '3 5',
         'state': '0',
         'actions': {
             '0': '',
@@ -232,7 +269,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_bite',
-        'key': '3 6',
         'state': '0',
         'actions': {
             '0': '',
@@ -241,7 +277,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_nipple',
-        'key': '3 7',
         'state': '0',
         'actions': {
             '0': '',
@@ -250,7 +285,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_pussy',
-        'key': '3 8',
         'state': '0',
         'actions': {
             '0': '',
@@ -259,7 +293,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_girl_bite',
-        'key': '4 6',
         'state': '0',
         'actions': {
             '0': '',
@@ -268,7 +301,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_girl_nipple',
-        'key': '4 7',
         'state': '0',
         'actions': {
             '0': '',
@@ -277,7 +309,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_girl_pussy',
-        'key': '4 8',
         'state': '0',
         'actions': {
             '0': '',
@@ -286,7 +317,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_bite',
-        'key': '5 6',
         'state': '0',
         'actions': {
             '0': '',
@@ -295,7 +325,6 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_nipple',
-        'key': '5 7',
         'state': '0',
         'actions': {
             '0': '',
@@ -304,13 +333,13 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_pussy',
-        'key': '5 8',
         'state': '0',
         'actions': {
             '0': '',
             '1': 'Hentai'
         }
     },
+
 ]
 
 def poll_doll_input(input_queue):
@@ -342,10 +371,15 @@ class DollPanel(PanelStateBase):
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
     try:
-        action, key = self.input_queue.get(block=False).split(',')
-        print('Setting {0} to {1}'.format(key.rstrip(), action))
-        control = [c['id'] for c in CONTROL_SCHEMES if c['key'] == key.rstrip()]
-        yield control[0], action
+        action, key = self.input_queue.get(block=False).rstrip().split(',')
+        first, second = key.split(' ')
+        id = '{0}_{1}'.format(touch_def[first], touch_def[second])
+
+        print('Setting {0} to {1}'.format(id, action))
+        control = [c['id'] for c in CONTROL_SCHEMES if c['id'] == id]
+        if len(control) > 0:
+            yield control[0], action
+        return
     except ValueError:
       self.display_message(
           'Invalid format. Must be of the form "control_id state"')

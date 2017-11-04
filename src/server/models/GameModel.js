@@ -2,7 +2,7 @@ const _ = require('underscore');
 const Backbone = require('backbone');
 const defaults = require('../../common/GameModelDefaults');
 const {
-  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD },
+  GAME_STATE: { WAITING_FOR_PLAYERS, WAITING_TO_START, IN_LEVEL, BETWEEN_LEVELS, DEAD, SCOREBOARD },
   gameHasStarted,
   SUN_PROGRESS_INCREMENT,
   SUN_UPDATE_INTERVAL_MS,
@@ -74,7 +74,7 @@ const GameModel = Backbone.Model.extend({
       remove: () => {
         if (this._playingPanels.isEmpty()) {
           if (gameHasStarted(this.get('state'))) {
-            this._endGame();
+            this._resetGame();
           } else {
             this.set({
               timeToStart: null,
@@ -93,12 +93,10 @@ const GameModel = Backbone.Model.extend({
         const assignedPanel = panels.findWhere({ command });
 
         if (timeToPerform > 0) {
-          assignedPanel.set('status', { progress: timeToPerform / timeToPerformMs(this.get('state')) });
+          assignedPanel.set('progress', timeToPerform / timeToPerformMs(this.get('state')));
         } else {
           if (gameStarted) {
-            // No need to clear this status after display since it will shortly be replaced by the
-            // new timer.
-            assignedPanel.set('status', { message: 'Too late!' });
+            assignedPanel.setStatus('Too late!', 500);
             this.set('progress', Math.max(this.get('progress') - 10, 0));
           }
 
@@ -116,12 +114,7 @@ const GameModel = Backbone.Model.extend({
 
         // Push the status before unsetting the command, as that will cause a new command to be
         // assigned and sent.
-        assignedPanel.set('status', { message: 'Nice job!' });
-        setTimeout(() => {
-          if (_.isEqual(assignedPanel.get('status'), { message: 'Nice job!' })) {
-            assignedPanel.unset('status');
-          }
-        }, 500);
+        assignedPanel.setStatus('Nice job!', 500);
 
         if (!gameHasStarted(this.get('state'))) {
           this._playingPanels.add(assignedPanel);
@@ -148,7 +141,8 @@ const GameModel = Backbone.Model.extend({
         switch (state) {
           case WAITING_FOR_PLAYERS:
             // Reset the panels so that players may signal they're ready.
-            this.panels.forEach((panel) => panel.unset('status'));
+            this.panels.invoke('clearStatusAndProgress');
+            this._playingPanels.reset();
             this._assignCommands();
 
             break;
@@ -190,11 +184,9 @@ const GameModel = Backbone.Model.extend({
             this._resetCommands();
 
             this._playingPanels.forEach((panel) => {
-              panel.set({
-                // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
-                display: 'Get ready...',
-                status: undefined
-              });
+              panel.clearStatusAndProgress();
+              // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
+              panel.set('display', 'Get ready...');
             });
 
             this._nextLevelTimeout = setTimeout(() => {
@@ -213,13 +205,19 @@ const GameModel = Backbone.Model.extend({
             this._resetCommands();
 
             this._playingPanels.forEach((panel) => {
-              panel.set({
-                display: 'Too late!!!',
-                status: undefined
-              });
+              panel.clearStatusAndProgress();
+              panel.set('display', 'Too late!!!');
             });
 
-            this._endGameTimeout = setTimeout(() => this._endGame(), TIME_TO_DIE_MS);
+            this._endGameTimeout = setTimeout(() => this.set('state', SCOREBOARD), TIME_TO_DIE_MS);
+
+            break;
+
+          case SCOREBOARD:
+            // Clear the 'Too late' message.
+            this._playingPanels.forEach((panel) => panel.unset('display'));
+
+            // We don't put any sort of timer in here for resetting the game--the user can hit space.
 
             break;
 
@@ -234,6 +232,8 @@ const GameModel = Backbone.Model.extend({
             this.set('state', IN_LEVEL);
           } else if (this.get('state') === WAITING_TO_START) { // Safety belts to avoid wiping out commands.
             this._playingPanels.forEach((panel) => {
+              panel.clearStatusAndProgress();
+
               // TODO(jeff): Fix https://github.com/wearhere/spacecontrol/issues/27 so we can use …
               panel.set('display', `Game will start in ${timeToStart / 1000}...`);
             });
@@ -315,62 +315,57 @@ const GameModel = Backbone.Model.extend({
     });
     if (_.isEmpty(panelsNeedingCommands)) return;
 
-    const controlsToPanels = new WeakMap();
-    const allControls = panels.reduce((controls, panel) => {
-      panel.controls.forEach((control) => {
-        controlsToPanels.set(control, panel);
-        controls.push(control);
-      });
-      return controls;
-    }, []);
+    const activeControls = this._commands.pluck('control');
+    const inactiveControlsByPanel = new Map();
+    panels.each((panel) => {
+      const inactiveControls = panel.controls.difference(activeControls);
+      if (!_.isEmpty(inactiveControls)) {
+        inactiveControlsByPanel.set(panel, inactiveControls);
+      }
+    });
 
-    const inactiveControls = _.difference(allControls, this._commands.pluck('control'));
+    panelsNeedingCommands.forEach((panel) => {
+      let panelToAssign, controlsToAssign;
 
-    let controlsToAssign;
+      // If we're waiting to start, we assign only same-panel commands, so that we may detect if
+      // a player is actually at the panel. Otherwise we assign cross-panel commands too, for most
+      // shouting.
+      //
+      // When we choose cross-panel commands, we choose a panel first, _then_ a control from that
+      // panel, rather than sampling from _all_ panels, in order to try to more evenly distribute
+      // commands between panels i.e. players (even if one panel has a ton of controls).
+      if (gameStarted) {
+        panelToAssign = _.sample([...inactiveControlsByPanel.keys()]);
+      } else {
+        panelToAssign = panel;
+      }
 
-    const assignControl = (panel, control) => {
+      controlsToAssign = inactiveControlsByPanel.get(panelToAssign);
+
+      const control = _.sample(controlsToAssign);
+
+      // We might have run out of controls.
+      if (!control) return;
+
+      // Remove this control (and potentially panel) from the set to assign.
+      controlsToAssign = _.without(controlsToAssign, control);
+      if (_.isEmpty(controlsToAssign)) {
+        inactiveControlsByPanel.delete(panelToAssign);
+      } else {
+        inactiveControlsByPanel.set(panel, controlsToAssign);
+      }
+
       const command = control.getCommand();
       panel.set({ command });
       this._commands.add(command);
 
-      // Give the player a limited time to perform commands. Once we start, skip announcing the
-      // first tick so that we don't wipe out the 'Nice job!' or 'Too late!' messages from
-      // completing the last command.
-      const announceStart = !gameHasStarted(this.get('state'));
-      command.start(timeToPerformMs(this.get('state')), announceStart);
-    };
-
-    // If we're waiting to start, we assign only same-panel commands, so that we may detect if
-    // a player is actually at the panel. Otherwise we assign cross-panel commands too, for most
-    // shouting.
-    if (gameStarted) {
-      controlsToAssign = _.sample(inactiveControls, panelsNeedingCommands.length);
-
-      panelsNeedingCommands.forEach((panel) => {
-        const control = controlsToAssign.pop();
-
-        // There could theoretically be fewer inactive controls than panels.
-        if (control) assignControl(panel, control);
-      });
-    } else {
-      panelsNeedingCommands.forEach((panel) => {
-        controlsToAssign = _.filter(inactiveControls, (control) => {
-          const pnl = controlsToPanels.get(control);
-          return pnl === panel;
-        });
-
-        const control = _.sample(controlsToAssign);
-
-        // This panel might have zero controls, either because it hasn't announced yet or because
-        // it's not configured right.
-        if (control) assignControl(panel, control);
-      });
-    }
+      // Give the player a limited time to perform commands.
+      command.start(timeToPerformMs(this.get('state')));
+    });
   },
 
-  _endGame() {
+  _resetGame() {
     this.set(_.result(this, 'defaults'));
-    this._playingPanels.reset();
   }
 }, {
   _instances: new Map(),

@@ -81,7 +81,8 @@ const build = new MultiBuild({
                 'SUN_PROGRESS_INCREMENT',
                 'SUN_UPDATE_INTERVAL_MS',
                 'DANGER_DISTANCE',
-                'TIME_BETWEEN_LEVELS_MS'
+                'TIME_BETWEEN_LEVELS_MS',
+                'MAX_SCOREBOARD_LENGTH'
               ]
             }
           }),
@@ -92,7 +93,8 @@ const build = new MultiBuild({
               'syntax-jsx',
               'transform-react-jsx',
               'transform-react-display-name',
-              'transform-object-rest-spread'
+              'transform-object-rest-spread',
+              'babel-plugin-transform-function-bind'
             ],
             exclude: 'node_modules/**'
           })
@@ -140,7 +142,7 @@ gulp.task('watch', function() {
   });
 
   // JS and JSX.
-  watch(['src/client/**/*', 'panels/keyboardPanel.jsx'], (file) => build.changed(file.path));
+  watch(['src/client/**/*', 'src/common/**/*', 'panels/keyboardPanel.jsx'], (file) => build.changed(file.path));
 
   watch('public/**')
     .pipe(cache('buildCache', { optimizeMemory: true })
