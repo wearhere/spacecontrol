@@ -22,7 +22,7 @@ from hardware import state
 CONTROL_SCHEMES = [
   {
     # weather: [frosty, chill, meh, hot in here, wtf] [0-4095 % 5]
-    'id': 'slide_1',
+    'id': 'slide_1_temp',
     'state': '0',
     'actions': {
       '0': 'It\'s fucking freezing',
@@ -34,7 +34,7 @@ CONTROL_SCHEMES = [
   },
   {
     # hynek: [1, 2, 3, 4, 5, 6, 7] [0-4095 % 5] 
-    'id': 'slide_2',
+    'id': 'slide_2_hynek',
     'state': '0',
     'actions': {
       '0': 'First kind: UFO on the horizon!',
@@ -51,7 +51,7 @@ CONTROL_SCHEMES = [
     # at higher levels, show various fruit?
     # at higher levels, show R G B pixel values :P
     # TODO: multiple levels of difficulty?
-    'id': 'rs_1',
+    'id': 'rs_1_rainbow',
     'state': '0',
     'actions': {
       '0': 'Strawberries',
@@ -64,18 +64,15 @@ CONTROL_SCHEMES = [
   },
   {
     # Bortle dark sky scale: [1-9] [0-3950] % 8
-    'id': 'rs_2',
+    'id': 'rs_2_dark_sky',
     'state': '0',
     'actions': {
-      '0': 'North Pole sky',
-      '1': 'Australian outback sky',
-      '2': 'Remote countryside sky',
-      '3': 'Small suburb sky',
-      '4': 'Large suburb sky',
-      '5': 'Small city sky',
-      '6': 'Bay Area sky',
-      '7': 'Big city sky',
-      '8': 'Times Square sky'
+      '0': 'Remote wilderness sky',
+      '1': 'Countryside sky',
+      '2': 'Small subub sky',
+      '3': 'Big suburb sky',
+      '4': 'San Francisco sky',
+      '5': 'Manhattan sky'
     },
   },
   {
