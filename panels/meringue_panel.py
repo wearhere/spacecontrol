@@ -78,7 +78,7 @@ CONTROL_SCHEMES = [
   {
     # Kardashev scale of civilization [1-5] [3950] % 5
     'id': 'rs_3_kardashev',
-    'state': 0,
+    'state': '0',
     'actions': {
       '0': 'Type I: planetary civilization with a parent star',
       '1': 'Type II: planet harvests full energy of parent star',
@@ -91,7 +91,7 @@ CONTROL_SCHEMES = [
   {
     # top button blue
     'id': 'b_top_blue',
-    'state': 0,
+    'state': '0',
     'actions': {
       '0': '',
       '1': 'Launch Infinite Improbability Drive!',
@@ -100,7 +100,7 @@ CONTROL_SCHEMES = [
   {
     # top button white
     'id': 'b_top_white',
-    'state': 0,
+    'state': '0',
     'actions': {
       '0': '',
       '1': 'Say thanks for all the fish',
@@ -109,7 +109,7 @@ CONTROL_SCHEMES = [
   {
     # top button green
     'id': 'b_top_green',
-    'state': 0,
+    'state': '0',
     'actions': {
       '0': '',
       '1': 'Subvert the dominant paradigm',
@@ -118,7 +118,7 @@ CONTROL_SCHEMES = [
   {
     # top button yellow
     'id': 'b_top_yellow',
-    'state': 0,
+    'state': '0',
     'actions': {
       '0': '',
       '1': 'Shuffle off this mortal coil',
