@@ -57,8 +57,8 @@ class ProgressLCD:
                 message_padded = message_padded[self._num_cols:]
             self._lines[i] = line
 
-    def _gen_status(self, ):
-        self._lines[self._num_rows-1] = message[:DEFAULT_NUM_COLUMNS]
+    def _gen_status(self, status):
+        self._lines[self._num_rows-1] = status[:DEFAULT_NUM_COLUMNS]
 
     def _gen_progress(self, progress):
         self._lines[self._num_rows-1] = '#' * (int(progress*self._num_cols))
