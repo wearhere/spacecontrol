@@ -14,6 +14,10 @@ h3 {
   font-size: 4em;
 }
 
+h4 {
+  font-size: 3em;
+}
+
 table {
   font-size: 3em;
   border-spacing: 50px 10px;
@@ -78,13 +82,41 @@ td {
   margin-top: 2em;
 }
 
-.timeToStart {
+.status {
   position: fixed;
   bottom: 1em;
 
   /* To center align: https://stackoverflow.com/a/25919090/495611 */
   left: 50%;
   transform: translate(-50%, 0);
+}
+
+@keyframes show {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.scoreboard[data-end-scroll="player-score"] .status {
+  /* HACK(jeff): This corrects for the scoreboard's translation. */
+  bottom: 7em;
+
+  opacity: 0;
+
+  animation: 0s var(--scroll-to-player-score-duration) linear forwards show;
+}
+
+.scoreboard[data-end-scroll="other-scores"] .status {
+  /* HACK(jeff): This corrects for the scoreboard's translation. */
+  bottom: calc(-100vh + 1em);
+
+  opacity: 0;
+
+  animation: 0s var(--scroll-to-other-scores-duration) linear forwards show;
+}
+
+.scoreboard[data-end-scroll="other-scores-including-player"] .status {
+  /* HACK(jeff): This corrects for the scoreboard's translation. */
+  bottom: 4em;
 }
 
 @keyframes zoomlefttoright {
@@ -106,6 +138,7 @@ td {
   right: 0;
 
   --scroll-to-player-score-duration: 5s;
+  --scroll-to-other-scores-duration: 15s;
 }
 
 @keyframes scroll-to-player-score {
@@ -127,7 +160,7 @@ td {
 
 .scoreboard[data-end-scroll="other-scores"] {
   transform: translateY(100vh);
-  animation: 15s linear forwards scroll-to-other-scores;
+  animation: var(--scroll-to-other-scores-duration) linear forwards scroll-to-other-scores;
 }
 
 .scoreboard[data-end-scroll="other-scores"] .player-score {

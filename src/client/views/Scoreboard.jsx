@@ -2,6 +2,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import React from 'react';
 import ScoreCollection from '/models/ScoreCollection';
+import Status from '/views/Status';
 
 export default class ScoreboardContainer extends React.Component {
   constructor() {
@@ -66,6 +67,8 @@ export default class ScoreboardContainer extends React.Component {
       return (
         <div className='scoreboard' data-end-scroll='other-scores-including-player'>
           <Scoreboard scores={scores}/>
+
+          <Status>Hit space to reset game</Status>
         </div>
       );
     } else {
@@ -77,12 +80,16 @@ export default class ScoreboardContainer extends React.Component {
 
               <NewHighScoreForm disabled={saveInProgress} onSubmit={::this.onSubmitScore}
                 onEscape={::this.onSkipScore}/>
+
+              <Status>Hit escape to skip</Status>
             </div>
           ) : (
             <div>
               <h2 className='player-score'>You made it to level {level}</h2>
 
               <Scoreboard scores={scores}/>
+
+              <Status>Hit space to reset game</Status>
             </div>
           )}
         </div>
