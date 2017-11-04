@@ -38,17 +38,11 @@ touch_def = {
     '11': 'blood_o',
     '12': 'syringe',
     '13': 'clown_butt',
-    '14': 'bird_bite'
+    '14': 'bird_bite',
+    # '15': 'clown belly',
+    # '16': 'clown_dick',
+    # '17': 'bird_shake'
 }
-
-special_def = {
-    '0': 'clown_belly',
-    '1': 'bird_shake'
-}
-
-# touch_def = ['rat_bite', 'rat_body', 'rat_tail', 'cat_bite', 'cat_claw', 'octo_bite', 'octo_tentacle',
-#            'girl_bite', 'girl_nipple', 'girl_pussy', 'blood_a', 'blood_o', 'syringe', 'clown_leg',
-#            'bird_bite']
 
 CONTROL_SCHEMES = [
     {
@@ -367,7 +361,6 @@ CONTROL_SCHEMES = [
             '1': 'Hentai'
         }
     },
-
 ]
 
 def poll_doll_input(input_queue):
@@ -427,6 +420,10 @@ class DollPanel(PanelStateBase):
     self.lcd.display_message(message)
     print('> {0}'.format(message))
 
-  def display_status(self, data):
-    self.lcd.display_progress(data['progress'])
-    print('Do {0}'.format(data))
+  def display_status(self, message):
+    self.lcd.display_status(message)
+    print('Status {0}'.format(message))
+
+  def display_progress(self, value):
+    self.lcd.display_progress(value)
+    print('Prog {0}'.format(value))
