@@ -61,7 +61,7 @@ const build = new MultiBuild({
            * https://github.com/rollup/rollup/issues/487#issuecomment-177596512.
            */
           replace({
-            'process.env.NODE_ENV': '"development"'
+            'process.env.NODE_ENV': `"${process.env.NODE_ENV || 'development'}"`
           }),
           rootImport({
             root: [`${__dirname}/src/client`, `${__dirname}/src/common`],

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "gulp"
+    "start": "gulp",
+    "production": "export NODE_ENV=production && gulp js && node src/server/app.js"
   },
   "author": "",
   "license": "MIT",

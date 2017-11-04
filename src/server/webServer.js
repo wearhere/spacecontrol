@@ -11,12 +11,14 @@ app.use(bodyParser.json());
 
 app.use('/public', express.static(path.join(__dirname, '../../public')));
 
-app.use(require('connect-livereload')({
-  port: 22222,
-  plugins: [
-    '/public/lib/livereload-require-js-includes/index.js'
-  ]
-}));
+if (process.env.NODE_ENV !== 'production') {
+  app.use(require('connect-livereload')({
+    port: 22222,
+    plugins: [
+      '/public/lib/livereload-require-js-includes/index.js'
+    ]
+  }));
+}
 
 app.use('/api', require('./api'));
 
