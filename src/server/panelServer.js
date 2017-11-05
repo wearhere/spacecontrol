@@ -3,6 +3,13 @@ const PanelModel = require('./models/PanelModel');
 const net = require('net');
 
 const server = net.createServer((connection) => {
+  const address = connection.address().address;
+
+  console.log(`Connection from ${address} opened`);
+  connection.once('close', () => {
+    console.log(`Connection from ${address} lost`);
+  });
+
   const panel = new PanelModel({}, { connection });
 
   // TODO(jeff): If we really wanted to support multiple games, we'd have to decide
