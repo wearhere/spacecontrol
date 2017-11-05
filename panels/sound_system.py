@@ -1,7 +1,8 @@
+import glob
+import os
 import pygame as pg
 import serial
 import time
-import os
 
 class SoundSystem:
     def __init__(self):
@@ -24,17 +25,15 @@ class SoundSystem:
 
         # find the sounds we have saved
         src_dir = os.path.dirname(__file__)
-        sound_dir = os.path.abspath(os.path.join(src_dir, '../sounds'))
-        all_sounds = os.path.join(sound_dir, '*.wav')
+        self.sound_dir = os.path.abspath(os.path.join(src_dir, '../panels/sounds'))
+        all_sounds = os.path.join(self.sound_dir, '*.wav')
         self.sounds = dict((os.path.basename(name)[:-4], name) for name in glob.glob(all_sounds))
-
-        print(self.sounds)
 
         # thread management
         self.channels = []
 
-    # def get_filepath(file):
-    #     return os.path.join(os.getcwd(), file)
+    def get_filepath(file):
+        return os.path.join(self.sound_dir, file)
 
     def play_sounds(self, song_array):
         for song in song_array:
@@ -44,16 +43,3 @@ class SoundSystem:
             sound.set_volume(1)
             channel.play(sound)
 
-    def find_and_play_sounds(self, x, y):
-        print x, y
-        return play_sounds(soundDict[pinAssign[x]][pinAssign[y]])
-
-# if __name__ == "__main__":
-#     #set up the mixer
-#     setup_mixer()
-#     while True :
-#         state = ser.readline()
-#         if state:
-#             x, y = state.split(' ')
-#             print state
-#             find_and_play_sounds(int(x), int(y))
