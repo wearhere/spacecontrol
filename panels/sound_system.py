@@ -39,7 +39,6 @@ class SoundSystem:
         for song in song_array:
             channel = pg.mixer.find_channel(True)
             print "Playing audio : ", song
-            sound = pg.mixer.Sound(get_filepath(song))
+            sound = pg.mixer.Sound(self.get_filepath(song))
             sound.set_volume(1)
             channel.play(sound)
-
