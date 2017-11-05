@@ -32,7 +32,7 @@ class SoundSystem:
         # thread management
         self.channels = []
 
-    def get_filepath(file):
+    def get_filepath(self, file):
         return os.path.join(self.sound_dir, file)
 
     def play_sounds(self, song_array):
