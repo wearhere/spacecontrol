@@ -293,6 +293,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_blood_a',
+        'sounds': ['cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -301,6 +302,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_blood_o',
+        'sounds': ['cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -309,6 +311,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_syringe',
+        'sounds': ['cat slurp.wav'],
         'state': '-1',
         'actions': {
             '-1': '',
@@ -319,6 +322,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_bird_bite',
+        'sounds': ['chomp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -327,6 +331,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_octo_bite',
+        'sounds': ['tom cat.wav', 'octo roar.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -335,6 +340,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_octo_tentacle',
+        'sounds': ['puking or fighting.wav', 'cat scream.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -343,6 +349,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_bite',
+        'sounds': ['throat clearing.wav', 'kitten meow.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -351,6 +358,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_nipple',
+        'sounds': ['girl ouch.wav', 'cat meow.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -359,6 +367,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_pussy',
+        'sounds': ['girl gasp.wav', 'tom cat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -375,6 +384,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_girl_bite',
+        'sounds': ['kiss.wav', 'girl kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -383,6 +393,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_girl_nipple',
+        'sounds': ['girl resistant moan.wav', 'cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -391,6 +402,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_girl_pussy',
+        'sounds': ['song easter egg.wav', 'water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -399,6 +411,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_bird_bite',
+        'sounds': ['kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -407,6 +420,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_bite',
+        'sounds': ['girl gasp.wav', 'cat_licking.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -415,6 +429,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_nipple',
+        'sounds': ['surprise moan girl.wav', 'water splash.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -423,6 +438,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_pussy',
+        'sounds': ['dubstep porn loop.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -431,6 +447,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'girl_bite_bird_bite',
+        'sounds': ['kiss.wav', 'girl kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -439,6 +456,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'girl_nipple_bird_bite',
+        'sounds': ['nipple giggle.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -447,6 +465,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'girl_pussy_bird_bite',
+        'sounds': ['girl gasp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -455,6 +474,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'blood_a_bird_bite',
+        'sounds': ['cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -463,6 +483,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'blood_o_bird_bite',
+        'sounds': ['cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -471,6 +492,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'syringe_bird_bite',
+        'sounds': ['cat slurp.wav'],
         'state': '0',
         'actions': {
             '-1': '',
@@ -519,7 +541,7 @@ class DollPanel(PanelStateBase):
         control = [c for c in CONTROL_SCHEMES if c['id'] == id]
         if len(control) > 0:
             print('Sending: {0} to {1}'.format(id, action))
-            if control[0].get('sounds') && len(control[0].get(action)) > 0:
+            if control[0].get('sounds') and len(control[0]['actions'].get(action)) > 0:
                 self.sound_system.play_sounds(control[0]['sounds'])
             yield control[0]['id'], action
         return
