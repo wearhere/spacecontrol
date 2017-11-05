@@ -4,8 +4,8 @@ import time
 import os
 
 class SoundSystem:
-  def __init__(self):
-    self.setup_mixer()
+    def __init__(self):
+        self.setup_mixer()
 
     def checkifComplete(channel):
         while channel.get_busy():
