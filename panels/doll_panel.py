@@ -120,7 +120,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_bird_bite',
-        'sounds': ['chomp.wav'],
+        'sounds': ['kiss.wav', 'twitter.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -546,6 +546,7 @@ class DollPanel(PanelStateBase):
             yield control[0]['id'], action
         return
     except ValueError:
+      print("Error logging control: {0}, action: {1}".format(control[0]['id'], action))
       self.display_message(
           'Invalid format. Must be of the form "control_id state"')
     except Queue.Empty:

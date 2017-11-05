@@ -3,7 +3,7 @@ import _ from 'underscore';
 import KeyHint from '/views/KeyHint';
 import React from 'react';
 import ScoreCollection from '/models/ScoreCollection';
-import { TIME_TO_STEP_SCOREBOARD } from '/GameConstants';
+import { TIME_TO_STEP_SCOREBOARD_MS } from '/GameConstants';
 
 export default class ScoreboardContainer extends React.Component {
   constructor() {
@@ -64,7 +64,7 @@ export default class ScoreboardContainer extends React.Component {
       }
     }).then(() => {
       // TODO(jeff): Show this interval on-screen: https://github.com/wearhere/spacecontrol/issues/71
-      this._triggerKeyHintTimeout = setTimeout(::this.onTriggerKeyHint, TIME_TO_STEP_SCOREBOARD);
+      this._triggerKeyHintTimeout = setTimeout(::this.onTriggerKeyHint, TIME_TO_STEP_SCOREBOARD_MS);
     });
   }
 

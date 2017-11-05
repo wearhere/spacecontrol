@@ -318,7 +318,7 @@ const GameModel = Backbone.Model.extend({
     const panelsNeedingCommands = panels.filter((panel) => {
       return !panel.has('command') &&
         !((this.get('state') === WAITING_TO_START) && this._playingPanels.contains(panel)) &&
-        !_.contains([BETWEEN_LEVELS, DEAD], this.get('state'));
+        (this.get('state') <= IN_LEVEL);
     });
     if (_.isEmpty(panelsNeedingCommands)) return;
 

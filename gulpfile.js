@@ -84,7 +84,7 @@ const build = new MultiBuild({
                 'SUN_UPDATE_INTERVAL_MS',
                 'DANGER_DISTANCE',
                 'TIME_BETWEEN_LEVELS_MS',
-                'TIME_TO_STEP_SCOREBOARD',
+                'TIME_TO_STEP_SCOREBOARD_MS',
                 'MAX_SCOREBOARD_LENGTH'
               ]
             }

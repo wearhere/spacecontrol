@@ -55,7 +55,7 @@ const TIME_BETWEEN_LEVELS_MS = 10 * 1000;
 const TIME_TO_DIE_MS = 3000;
 
 // The time to wait before skipping high score entry, and then resetting the game.
-const TIME_TO_STEP_SCOREBOARD = 10 * 1000;
+const TIME_TO_STEP_SCOREBOARD_MS = 30 * 1000;
 
 // The number of high scores to record.
 // HACK(jeff): 7 is all that will fit on a 1280x720px screen.
@@ -72,6 +72,6 @@ module.exports = {
   timeToPerformMs,
   TIME_BETWEEN_LEVELS_MS,
   TIME_TO_DIE_MS,
-  TIME_TO_STEP_SCOREBOARD,
+  TIME_TO_STEP_SCOREBOARD_MS,
   MAX_SCOREBOARD_LENGTH
 };
