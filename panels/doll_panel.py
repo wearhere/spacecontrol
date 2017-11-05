@@ -519,7 +519,7 @@ class DollPanel(PanelStateBase):
         control = [c for c in CONTROL_SCHEMES if c['id'] == id]
         if len(control) > 0:
             print('Sending: {0} to {1}'.format(id, action))
-            if control[0].get('sounds'):
+            if control[0].get('sounds') && len(control[0].get(action)) > 0:
                 self.sound_system.play_sounds(control[0]['sounds'])
             yield control[0]['id'], action
         return
