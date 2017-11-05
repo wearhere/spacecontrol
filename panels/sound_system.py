@@ -7,12 +7,12 @@ class SoundSystem:
     def __init__(self):
         self.setup_mixer()
 
-    def checkifComplete(channel):
+    def checkifComplete(self, channel):
         while channel.get_busy():
             pg.time.wait(800)
         channel.stop()
 
-    def setup_mixer():
+    def setup_mixer(self):
         pg.mixer.init(
             frequency = 48000,
             size = -16,
@@ -36,7 +36,7 @@ class SoundSystem:
     # def get_filepath(file):
     #     return os.path.join(os.getcwd(), file)
 
-    def play_sounds(song_array):
+    def play_sounds(self, song_array):
         for song in song_array:
             channel = pg.mixer.find_channel(True)
             print "Playing audio : ", song
@@ -44,7 +44,7 @@ class SoundSystem:
             sound.set_volume(1)
             channel.play(sound)
 
-    def find_and_play_sounds(x, y):
+    def find_and_play_sounds(self, x, y):
         print x, y
         return play_sounds(soundDict[pinAssign[x]][pinAssign[y]])
 
