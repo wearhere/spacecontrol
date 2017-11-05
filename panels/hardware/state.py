@@ -70,29 +70,20 @@ MERINGUE_INPUTS = {
       max_val=4095,
       ),
     # TRIPLE SWITCHES
-    "ts_tongue_1" : Switch(
+    "ts_tongue" : TripleSwitch(
       device=BLACKPILL,
-      pin=12,
+      up_pin=12,
+      down_pin=13,
       ),
-    "ts_tongue_2" : Switch(
+    "ts_light_blue_dick" : TripleSwitch(
       device=BLACKPILL,
-      pin=13,
+      up_pin=14,
+      down_pin=15,
       ),
-    "ts_light_blue_dick_1" : Switch(
+    "ts_big_balls_dick_1" : TripleSwitch(
       device=BLACKPILL,
-      pin=14,
-      ),
-    "ts_light_blue_dick_2" : Switch(
-      device=BLACKPILL,
-      pin=15,
-      ),
-     "ts_big_balls_dick_1" : Switch(
-      device=BLACKPILL,
-      pin=16,
-      ),
-    "ts_big_balls_dick_2" : Switch(
-      device=BLACKPILL,
-      pin=17,
+      up_pin = 17,
+      down_pin=16,
       ),
     }
 
@@ -100,6 +91,6 @@ def generate(inputs=MERINGUE_INPUTS):
   state = {}
   for tag, control in inputs.items():
     control.read()
-    state[tag] = control.value
-  #print "state: ", state
+    state[tag] = str(control.value)
+  print "statei in generate: ", state
   return state

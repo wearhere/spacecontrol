@@ -25,11 +25,11 @@ CONTROL_SCHEMES = [
     'id': 'slide_1_temp',
     'state': '0',
     'actions': {
-      '0': 'It\'s fucking freezing',
-      '1': 'Kinda chilly in here',
+      '4': 'It\'s fucking freezing',
+      '3': 'Kinda chilly in here',
       '2': 'The weather is mild and pleasant',
-      '3': 'It\'s getting warm in here',
-      '4': 'OMG SO FUCKING HOT IN HERE'
+      '1': 'It\'s getting warm in here',
+      '0': 'OMG SO FUCKING HOT IN HERE'
     },
   },
   {
@@ -130,7 +130,7 @@ CONTROL_SCHEMES = [
     'state': '0',
     'actions': {
       '0': '',
-      '1': 'Small blue button on the left',
+      '1': 'Soar angelic',
     },
   },
   {
@@ -138,7 +138,7 @@ CONTROL_SCHEMES = [
     'state': '0',
     'actions': {
       '0': '',
-      '1': 'Small green button on the left',
+      '1': 'Make this trivial world sublime',
     },
   },
   {
@@ -146,35 +146,35 @@ CONTROL_SCHEMES = [
     'state': '0',
     'actions': {
       '0': '',
-      '1': 'Small blue button on the left',
+      '1': 'Fathom hell',
     },
   },
   # TRIPLE SWITCHES
   {
     'id': 'tongue_tsw',
-    'state': '0',
+    'state': 'neutral',
     'actions': {
-      '0': 'leave the tongue in neutral',
-      '1': 'lick all the way up',
-      '2': 'lick all the way down',
-    },
+      'neutral': 'Tongue sticks straight out',
+      'up': 'Tongue licks all the way up',
+      'down': 'Tongue licks all the way down',
+      },
   },
   {
     'id': 'light_blue_sw',
-    'state': '0',
+    'state': 'neutral',
     'actions': {
-      '0': 'leave the light blue dick in neutral',
-      '1': 'light blue dick all the way up',
-      '2': 'light blue dick all the way down',
-    },
+      'neutral': 'Periwinkle dick is chilling',
+      'up': 'Periwinkle dick is hard',
+      'down': 'Periwinkle dick is flaccid',
+      },
   },
   {
     'id': 'big_balls_sw',
-    'state': '0',
+    'state': 'neutral',
     'actions': {
-      '0': 'leave the big ball dick in neutral',
-      '1': 'big ball dick all  the way up',
-      '2': 'big ball dick all the way down',
+      'neutral': 'Big balls dick is chilling',
+      'up': 'Big ball dick is hard',
+      'down': 'Big ball dick is flaccid',
     },
   },
 ]

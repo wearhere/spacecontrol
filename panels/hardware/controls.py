@@ -12,16 +12,36 @@ class Switch(object):
     self.device = device
     self.pin = pin
 
-    self.prev_value = None
-    self.value = None
+    self.prev_value = 0
+    self.value = 0
 
   def read(self):
     self.prev_value = self.value
-    self.value = self.device.read(self.pin)
+    self.value = int(self.device.read(self.pin))
     self.after_read()
 
   def after_read(self):
     pass
+
+class TripleSwitch(object):
+  def __init__(self, device, up_pin, down_pin):
+    self.up_switch = Switch(device, up_pin)
+    self.down_switch = Switch(device, down_pin)
+    self.prev_value = "neutral"
+    self.value = "neutral"
+
+  def read(self):
+    self.up_switch.read()
+    self.down_switch.read()
+    up = self.up_switch.value
+    down = self.down_switch.value
+    self.prev_value = self.value
+    if down == 0 and up == 1:
+      self.value = "up"
+    elif down == 1  and up == 0:
+      self.value = "down"
+    else:
+      self.value ="neutral"
 
 class SwitchWithLight(Switch):
   ACTIVE_COLOR = Color("green")
