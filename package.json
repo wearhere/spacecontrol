@@ -22,6 +22,7 @@
     "ink-text-input": "^1.1.1",
     "publication-client": "^1.4.6",
     "publication-server": "github:mixmaxhq/publication-server#jeff/node8_support",
+    "react-dom": "^16.0.0",
     "underscore": "^1.8.3",
     "uuid": "^3.1.0",
     "yargs": "^10.0.3"

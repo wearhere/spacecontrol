@@ -52,7 +52,7 @@ const build = new MultiBuild({
           underscore: '_',
           backbone: 'Backbone',
           react: 'React',
-          'react-dom': 'ReactDOM'
+          'react-dom': 'ReactDOM',
         },
         plugins: [
           /**
@@ -61,6 +61,8 @@ const build = new MultiBuild({
            * https://github.com/rollup/rollup/issues/487#issuecomment-177596512.
            */
           replace({
+            // Don't ever build for production because a) we're not deploying this anywhere
+            // b) that'll break use of `ReactTestUtils.simulate`.
             'process.env.NODE_ENV': `"${process.env.NODE_ENV || 'development'}"`
           }),
           rootImport({
@@ -82,6 +84,7 @@ const build = new MultiBuild({
                 'SUN_UPDATE_INTERVAL_MS',
                 'DANGER_DISTANCE',
                 'TIME_BETWEEN_LEVELS_MS',
+                'TIME_TO_STEP_SCOREBOARD',
                 'MAX_SCOREBOARD_LENGTH'
               ]
             }

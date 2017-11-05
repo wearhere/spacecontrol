@@ -1,8 +1,9 @@
 import $ from 'jquery';
 import _ from 'underscore';
+import KeyHint from '/views/KeyHint';
 import React from 'react';
 import ScoreCollection from '/models/ScoreCollection';
-import Status from '/views/Status';
+import { TIME_TO_STEP_SCOREBOARD } from '/GameConstants';
 
 export default class ScoreboardContainer extends React.Component {
   constructor() {
@@ -21,6 +22,58 @@ export default class ScoreboardContainer extends React.Component {
   componentDidMount() {
     // Don't bother handling any errors, the players can just reset the game.
     this.scores.fetch().done(() => this.setState({ isLoaded: true }));
+
+    this.scheduleKeyHintTrigger();
+  }
+
+  componentWillUpdate() {
+    // Remove the animation listener before our reference to the scoreboard container changes.
+    $(this._scoreboardContainer).off('animationend');
+  }
+
+  componentDidUpdate() {
+    this.scheduleKeyHintTrigger();
+  }
+
+  componentWillUnmount() {
+    this.clearKeyHintTrigger();
+  }
+
+  clearKeyHintTrigger() {
+    $(this._scoreboardContainer).off('animationend');
+    clearTimeout(this._triggerKeyHintTimeout);
+  }
+
+  scheduleKeyHintTrigger() {
+    // Component hasn't rendered yet.
+    if (!this._scoreboardContainer) return;
+
+    this.clearKeyHintTrigger();
+
+    Promise.resolve().then(() => {
+      const $scoreboardContainer = $(this._scoreboardContainer);
+      if ($scoreboardContainer.css('animation') &&
+          !$scoreboardContainer.css('animation').startsWith('none')
+          && !$scoreboardContainer.data('animation-ended')) {
+        return new Promise((resolve) => {
+          $scoreboardContainer.on('animationend', () => {
+            $scoreboardContainer.data('animation-ended', true);
+            resolve();
+          });
+        });
+      }
+    }).then(() => {
+      // TODO(jeff): Show this interval on-screen: https://github.com/wearhere/spacecontrol/issues/71
+      this._triggerKeyHintTimeout = setTimeout(::this.onTriggerKeyHint, TIME_TO_STEP_SCOREBOARD);
+    });
+  }
+
+  onTriggerKeyHint() {
+    this._keyHint.trigger();
+  }
+
+  onScoreKeyPress() {
+    this.clearKeyHintTrigger();
   }
 
   onSubmitScore(e) {
@@ -62,26 +115,44 @@ export default class ScoreboardContainer extends React.Component {
 
     const scores = this.scores.toJSON();
 
+    const RefedScoreboardContainer = (props) => {
+      return (
+        <div className='scoreboard' ref={(el) => this._scoreboardContainer = el} {..._.omit(props, 'children')}>
+          {props.children}
+        </div>
+      );
+    };
+
+    const RefedKeyHint = (props) => {
+      return (
+        <KeyHint ref={(el) => this._keyHint = el} {..._.omit(props, 'children')}>
+          {props.children}
+        </KeyHint>
+      );
+    };
+
     if (hasSavedScore || hasSkippedHighScore) {
       // Immediately transition to the scoreboard.
       return (
-        <div className='scoreboard' data-end-scroll='other-scores-including-player'>
+        <RefedScoreboardContainer data-end-scroll='other-scores-including-player'>
           <Scoreboard scores={scores}/>
 
-          <Status>Hit space to reset game</Status>
-        </div>
+          <RefedKeyHint triggerKey=' '>Hit space to reset game</RefedKeyHint>
+        </RefedScoreboardContainer>
       );
     } else {
       return (
-        <div className='scoreboard' data-end-scroll={isHighScore ? 'player-score' : 'other-scores'}>
+        <RefedScoreboardContainer data-end-scroll={isHighScore ? 'player-score' : 'other-scores'}>
           {isHighScore ? (
             <div>
               <h2 className='player-score'>You made it to level {level}</h2>
 
-              <NewHighScoreForm disabled={saveInProgress} onSubmit={::this.onSubmitScore}
+              <NewHighScoreForm disabled={saveInProgress}
+                onKeyPress={::this.onScoreKeyPress}
+                onSubmit={::this.onSubmitScore}
                 onEscape={::this.onSkipScore}/>
 
-              <Status>Hit escape to skip</Status>
+              <RefedKeyHint triggerKey='Escape'>Hit escape to skip</RefedKeyHint>
             </div>
           ) : (
             <div>
@@ -89,25 +160,35 @@ export default class ScoreboardContainer extends React.Component {
 
               <Scoreboard scores={scores}/>
 
-              <Status>Hit space to reset game</Status>
+              <RefedKeyHint triggerKey=' '>Hit space to reset game</RefedKeyHint>
             </div>
           )}
-        </div>
+        </RefedScoreboardContainer>
       );
     }
   }
 }
 
-function NewHighScoreForm(props) {
-  return (
-    <div className='new-high-score'>
-      <h3>New high score!</h3>
+class NewHighScoreForm extends React.Component {
+  onKeyDown(e) {
+    if ((e.key === 'Escape') && this.props.onEscape) {
+      e.stopPropagation();
 
-      <form onSubmit={props.onSubmit}>
-        <NameInput disabled={props.disabled} name='name' onEscape={props.onEscape} focus/>
-      </form>
-    </div>
-  );
+      this.props.onEscape();
+    }
+  }
+
+  render() {
+    return (
+      <div className='new-high-score'>
+        <h3>New high score!</h3>
+
+        <form onKeyDown={::this.onKeyDown} onKeyPress={this.props.onKeyPress} onSubmit={this.props.onSubmit}>
+          <NameInput disabled={this.props.disabled} name='name' focus/>
+        </form>
+      </div>
+    );
+  }
 }
 
 class NameInput extends React.Component {
@@ -121,14 +202,6 @@ class NameInput extends React.Component {
     clearInterval(this._flashPlaceholderInterval);
   }
 
-  onKeyDown(e) {
-    e.stopPropagation();
-
-    if ((e.key === 'Escape') && this.props.onEscape) {
-      this.props.onEscape();
-    }
-  }
-
   render() {
     return (
       <input
@@ -137,7 +210,6 @@ class NameInput extends React.Component {
         name={this.props.name}
         type="text"
         placeholder='Enter your name'
-        onKeyDown={::this.onKeyDown}
       />
     );
   }

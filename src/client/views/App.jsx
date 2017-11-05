@@ -44,11 +44,11 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    $(window).on('keydown', this.onKeyDown);
+    $(document.body).on('keydown', this.onKeyDown);
   }
 
   componentWillUnmount() {
-    $(window).off('keydown', this.onKeyDown);
+    $(document.body).off('keydown', this.onKeyDown);
   }
 
   onKeyDown(e) {
