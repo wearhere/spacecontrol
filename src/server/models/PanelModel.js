@@ -10,6 +10,7 @@ const PanelModel = Backbone.Model.extend({
   },
 
   _statusTimeout: null,
+  _keepAliveInterval: null,
 
   initialize(attrs, { connection }) {
     this.controls = new ControlCollection();
@@ -35,6 +36,12 @@ const PanelModel = Backbone.Model.extend({
         this.set('display', command.get('action'));
       }
     });
+
+    this._keepAliveInterval = setInterval(() => {
+      this._send('keep-alive');
+    }, 1000);
+
+    this.once('destroy', () => clearInterval(this._keepAliveInterval));
   },
 
   setStatus(status, timeout) {
