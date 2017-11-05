@@ -7,6 +7,7 @@ from __future__ import print_function
 import json
 import Queue
 from progress_lcd import ProgressLCD
+from sound_system import SoundSystem
 import select
 import serial
 import threading
@@ -110,6 +111,14 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'rat_bite_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Rat kisses the Vampire Bird'
+        }
+    },
+    {
         'id': 'rat_body_octo_tentacle',
         'state': '0',
         'actions': {
@@ -141,6 +150,14 @@ CONTROL_SCHEMES = [
             '0': 'Inject Manganate into the Rat\'s body',
             '1': 'Inject L-Theanine into the Rat\'s body',
             '2': 'Inject Hemoglobin into the Rat\'s body',
+        }
+    },
+    {
+        'id': 'rat_body_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird draws blood from Rat\'s body'
         }
     },
     {
@@ -274,6 +291,14 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'cat_bite_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Kitty kisses the Vampire Bird'
+        }
+    },
+    {
         'id': 'cat_claw_octo_bite',
         'state': '0',
         'actions': {
@@ -314,6 +339,14 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'cat_claw_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Kitty claws the Vampire Bird\'s beak'
+        }
+    },
+    {
         'id': 'octo_bite_girl_bite',
         'state': '0',
         'actions': {
@@ -338,6 +371,14 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'octo_bite_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird kisses the Octopus'
+        }
+    },
+    {
         'id': 'octo_tentacle_girl_bite',
         'state': '0',
         'actions': {
@@ -359,6 +400,56 @@ CONTROL_SCHEMES = [
         'actions': {
             '0': '',
             '1': 'Hentai'
+        }
+    },
+    {
+        'id': 'girl_bite_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird kisses Madeline'
+        }
+    },
+    {
+        'id': 'girl_nipple_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird nuzzles Madeline\'s nipple'
+        }
+    },
+    {
+        'id': 'girl_pussy_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird teethes Madeline\'s down low'
+        }
+    },
+    {
+        'id': 'blood_a_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Feed A-type Blood to Vampire Bird'
+        }
+    },
+    {
+        'id': 'blood_o_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Feed O-type Blood to Vampire Bird'
+        }
+    },
+    {
+        'id': 'syringe_bird_bite',
+        'state': '0',
+        'actions': {
+            '-1': '',
+            '0': '',
+            '1': '',
+            '2': 'Feed some Hemoglobin to the Vampire Bird',
         }
     },
 ]
@@ -388,6 +479,7 @@ class DollPanel(PanelStateBase):
     self.input_thread.start()
     self.lcd = ProgressLCD(rs_pin=25, en_pin=24, d4_pin=23, d5_pin=17,
       d6_pin=21, d7_pin=22)
+    self.sound_system = SoundSystem()
 
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
@@ -400,6 +492,8 @@ class DollPanel(PanelStateBase):
         control = [c['id'] for c in CONTROL_SCHEMES if c['id'] == id]
         if len(control) > 0:
             print('Sending: {0} to {1}'.format(id, action))
+            if control['sounds']:
+                self.sound_system.play_sounds([])
             yield control[0], action
         return
     except ValueError:
