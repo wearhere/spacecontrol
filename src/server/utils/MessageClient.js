@@ -37,6 +37,7 @@ class MessageClient extends EventEmitter {
     if (!this._socket) throw new Error('Connection has closed');
 
     const encodedMessage = MessageClient.encode({ message, data });
+    console.log('sending', { message, data }, 'to client', this._socket.address().address);
     this._socket.write(encodedMessage);
   }
 
