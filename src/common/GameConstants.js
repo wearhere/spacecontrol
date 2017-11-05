@@ -54,6 +54,9 @@ const TIME_BETWEEN_LEVELS_MS = 10 * 1000;
 // thank u based rutger hauer
 const TIME_TO_DIE_MS = 3000;
 
+// The time to wait before skipping high score entry, and then resetting the game.
+const TIME_TO_STEP_SCOREBOARD = 10 * 1000;
+
 // The number of high scores to record.
 const MAX_SCOREBOARD_LENGTH = 10;
 
@@ -68,5 +71,6 @@ module.exports = {
   timeToPerformMs,
   TIME_BETWEEN_LEVELS_MS,
   TIME_TO_DIE_MS,
+  TIME_TO_STEP_SCOREBOARD,
   MAX_SCOREBOARD_LENGTH
 };
