@@ -63,7 +63,7 @@ const build = new MultiBuild({
           replace({
             // Don't ever build for production because a) we're not deploying this anywhere
             // b) that'll break use of `ReactTestUtils.simulate`.
-            'process.env.NODE_ENV': `"${process.env.NODE_ENV || 'development'}"`
+            'process.env.NODE_ENV': 'development'
           }),
           rootImport({
             root: [`${__dirname}/src/client`, `${__dirname}/src/common`],
