@@ -100,7 +100,7 @@ class App extends React.Component {
               marginLeft: `${props.progress}vw`,
               transition: `all ${SPACESHIP_UPDATE_INTERVAL_MS / 1000}s ease` }}/>
 
-            <Status>Hit space to reset game</Status>
+            <Status>Hit space bar to reset</Status>
 
             {((props.progress - props.sunProgress) <= DANGER_DISTANCE) &&
               <DangerMask fatal={props.state === DEAD}/>
