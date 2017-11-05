@@ -138,6 +138,8 @@ const GameModel = Backbone.Model.extend({
 
     this.on({
       'change:state': (model, state) => {
+        console.log('Changing to state', state);
+
         clearInterval(this._timeToStartInterval);
         clearInterval(this._sunInterval);
         clearTimeout(this._nextLevelTimeout);
