@@ -7,6 +7,7 @@ from __future__ import print_function
 import json
 import Queue
 from progress_lcd import ProgressLCD
+from sound_system import SoundSystem
 import select
 import serial
 import threading
@@ -35,16 +36,19 @@ touch_def = {
     '8': 'girl_nipple',
     '9': 'girl_pussy',
     '10': 'blood_a',
-    '11': 'blood_o'
+    '11': 'blood_o',
+    '12': 'syringe',
+    '13': 'clown_butt',
+    '14': 'bird_bite',
+    # '15': 'clown belly',
+    # '16': 'clown_dick',
+    # '17': 'bird_shake'
 }
-
-# touch_def = ['rat_bite', 'rat_body', 'rat_tail', 'cat_bite', 'cat_claw', 'octo_bite', 'octo_tentacle',
-#            'girl_bite', 'girl_nipple', 'girl_pussy', 'blood_a', 'blood_o', 'syringe', 'clown_leg',
-#            'bird_bite']
 
 CONTROL_SCHEMES = [
     {
         'id': 'rat_bite_rat_tail',
+        'sounds': ['squeaky kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -53,6 +57,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_cat_bite',
+        'sounds': ['cat bite.wav', 'squeaky rat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -61,6 +66,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_cat_claw',
+        'sounds': ['cat scratch.wav', 'rat squeak.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -69,6 +75,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_octo_bite',
+        'sounds': ['water churn.wav', 'squeaky kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -77,6 +84,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_octo_tentacle',
+        'sounds': ['tent squish.wav', 'dog toy squish.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -85,6 +93,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_bite',
+        'sounds': ['kiss.wav', 'girl kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -93,6 +102,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_nipple',
+        'sounds': ['nipple giggle.wav', 'squeaky kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -101,6 +111,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_pussy',
+        'sounds': ['girl resistant moan.wav', 'laughingmice.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -108,7 +119,17 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'rat_bite_bird_bite',
+        'sounds': ['chomp.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Rat kisses the Vampire Bird'
+        }
+    },
+    {
         'id': 'rat_body_octo_tentacle',
+        'sounds': ['water splash.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -117,6 +138,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_body_blood_a',
+        'sounds': ['water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -125,6 +147,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_body_blood_o',
+        'sounds': ['water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -132,7 +155,28 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'rat_body_syringe',
+        'sounds': ['squeaky rat.wav'],
+        'state': '-1',
+        'actions': {
+            '-1': '',
+            '0': 'Inject Manganate into the Rat\'s body',
+            '1': 'Inject L-Theanine into the Rat\'s body',
+            '2': 'Inject Hemoglobin into the Rat\'s body',
+        }
+    },
+    {
+        'id': 'rat_body_bird_bite',
+        'sounds': ['chomp.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird draws blood from Rat\'s body'
+        }
+    },
+    {
         'id': 'rat_tail_cat_bite',
+        'sounds': ['cat bite.wav', 'squeaky rat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -141,6 +185,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_cat_claw',
+        'sounds': ['cat scratch.wav', 'rat squeak.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -149,6 +194,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_octo_bite',
+        'sounds': ['octo whimper.wav', 'squeaky rat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -157,6 +203,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_octo_tentacle',
+        'sounds': ['clown-teehee.wav', 'dog toy squish.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -165,6 +212,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_bite',
+        'sounds': ['chomp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -173,6 +221,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_nipple',
+        'sounds': ['girl gasp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -181,6 +230,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_pussy',
+        'sounds': ['girl scream rat tail.wav', 'rat squeak.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -189,6 +239,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_cat_claw',
+        'sounds': ['long purr.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -197,6 +248,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_octo_bite',
+        'sounds': ['cat slurp.wav', 'water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -205,6 +257,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_octo_tentacle',
+        'sounds': ['cat bite.wav', 'octo whimper.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -213,6 +266,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_bite',
+        'sounds': ['kiss breath.wav', 'light purr.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -221,6 +275,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_nipple',
+        'sounds': ['nipple giggle.wav', 'kitten meow.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -229,6 +284,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_pussy',
+        'sounds': ['meow commercial.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -237,6 +293,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_blood_a',
+        'sounds': ['cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -245,6 +302,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_blood_o',
+        'sounds': ['cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -252,7 +310,28 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'cat_bite_syringe',
+        'sounds': ['cat slurp.wav'],
+        'state': '-1',
+        'actions': {
+            '-1': '',
+            '0': 'Feed Kitty some Manganate',
+            '1': 'Force feed the Cat L-Theanine',
+            '2': 'Inject Hemoglobin into the Cat\'s mouth',
+        }
+    },
+    {
+        'id': 'cat_bite_bird_bite',
+        'sounds': ['chomp.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Kitty kisses the Vampire Bird'
+        }
+    },
+    {
         'id': 'cat_claw_octo_bite',
+        'sounds': ['tom cat.wav', 'octo roar.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -261,6 +340,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_octo_tentacle',
+        'sounds': ['puking or fighting.wav', 'cat scream.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -269,6 +349,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_bite',
+        'sounds': ['throat clearing.wav', 'kitten meow.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -277,6 +358,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_nipple',
+        'sounds': ['girl ouch.wav', 'cat meow.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -285,6 +367,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_claw_girl_pussy',
+        'sounds': ['girl gasp.wav', 'tom cat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -292,7 +375,16 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'cat_claw_bird_bite',
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Kitty claws the Vampire Bird\'s beak'
+        }
+    },
+    {
         'id': 'octo_bite_girl_bite',
+        'sounds': ['kiss.wav', 'girl kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -301,14 +393,16 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_bite_girl_nipple',
+        'sounds': ['girl resistant moan.wav', 'cat slurp.wav'],
         'state': '0',
         'actions': {
             '0': '',
-            '1': 'Octopus plays with Madeline\'s nipples'
+            '1': 'Octopus nibbles Madeline\'s nipples'
         }
     },
     {
         'id': 'octo_bite_girl_pussy',
+        'sounds': ['song easter egg.wav', 'water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -316,7 +410,17 @@ CONTROL_SCHEMES = [
         }
     },
     {
+        'id': 'octo_bite_bird_bite',
+        'sounds': ['kiss.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird kisses the Octopus'
+        }
+    },
+    {
         'id': 'octo_tentacle_girl_bite',
+        'sounds': ['girl gasp.wav', 'cat_licking.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -325,6 +429,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_nipple',
+        'sounds': ['surprise moan girl.wav', 'water splash.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -333,13 +438,69 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'octo_tentacle_girl_pussy',
+        'sounds': ['dubstep porn loop.wav'],
         'state': '0',
         'actions': {
             '0': '',
             '1': 'Hentai'
         }
     },
-
+    {
+        'id': 'girl_bite_bird_bite',
+        'sounds': ['kiss.wav', 'girl kiss.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird kisses Madeline'
+        }
+    },
+    {
+        'id': 'girl_nipple_bird_bite',
+        'sounds': ['nipple giggle.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird nuzzles Madeline\'s nipple'
+        }
+    },
+    {
+        'id': 'girl_pussy_bird_bite',
+        'sounds': ['girl gasp.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Vampire Bird teethes Madeline\'s down low'
+        }
+    },
+    {
+        'id': 'blood_a_bird_bite',
+        'sounds': ['cat slurp.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Feed A-type Blood to Vampire Bird'
+        }
+    },
+    {
+        'id': 'blood_o_bird_bite',
+        'sounds': ['cat slurp.wav'],
+        'state': '0',
+        'actions': {
+            '0': '',
+            '1': 'Feed O-type Blood to Vampire Bird'
+        }
+    },
+    {
+        'id': 'syringe_bird_bite',
+        'sounds': ['cat slurp.wav'],
+        'state': '0',
+        'actions': {
+            '-1': '',
+            '0': '',
+            '1': '',
+            '2': 'Feed some Hemoglobin to the Vampire Bird',
+        }
+    },
 ]
 
 def poll_doll_input(input_queue):
@@ -367,6 +528,7 @@ class DollPanel(PanelStateBase):
     self.input_thread.start()
     self.lcd = ProgressLCD(rs_pin=25, en_pin=24, d4_pin=23, d5_pin=17,
       d6_pin=21, d7_pin=22)
+    self.sound_system = SoundSystem()
 
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
@@ -376,9 +538,12 @@ class DollPanel(PanelStateBase):
         id = '{0}_{1}'.format(touch_def[first], touch_def[second])
 
         print('Setting {0} to {1}'.format(id, action))
-        control = [c['id'] for c in CONTROL_SCHEMES if c['id'] == id]
+        control = [c for c in CONTROL_SCHEMES if c['id'] == id]
         if len(control) > 0:
-            yield control[0], action
+            print('Sending: {0} to {1}'.format(id, action))
+            if control[0].get('sounds') and control[0]['actions'].get(action) and len(control[0]['actions'].get(action)) > 0:
+                self.sound_system.play_sounds(control[0]['sounds'])
+            yield control[0]['id'], action
         return
     except ValueError:
       self.display_message(
@@ -398,6 +563,10 @@ class DollPanel(PanelStateBase):
     self.lcd.display_message(message)
     print('> {0}'.format(message))
 
-  def display_status(self, data):
-    self.lcd.display_progress(data['progress'])
-    print('Do {0}'.format(data))
+  def display_status(self, message):
+    self.lcd.display_status(message)
+    print('Status {0}'.format(message))
+
+  def display_progress(self, value):
+    self.lcd.display_progress(value)
+    print('Prog {0}'.format(value))

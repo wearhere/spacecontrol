@@ -41,6 +41,11 @@ class ProgressLCD:
         self._lcd.clear()
         self._lcd.message('\n'.join(self._lines))
 
+    def display_status(self, status):
+        self._gen_status(status)
+        self._lcd.clear()
+        self._lcd.message('\n'.join(self._lines))
+
     def _add_text(self, message):
         lines = message.split('\n')
         message_padded = ''.join(line + ' ' * ((self._num_cols - len(line)) % self._num_cols)
@@ -51,6 +56,9 @@ class ProgressLCD:
                 line = message_padded[:self._num_cols]
                 message_padded = message_padded[self._num_cols:]
             self._lines[i] = line
+
+    def _gen_status(self, status):
+        self._lines[self._num_rows-1] = status[:DEFAULT_NUM_COLUMNS]
 
     def _gen_progress(self, progress):
         self._lines[self._num_rows-1] = '#' * (int(progress*self._num_cols))

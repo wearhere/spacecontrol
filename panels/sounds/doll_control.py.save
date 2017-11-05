@@ -1,0 +1,42 @@
+from threading import Thread
+import socket
+import time
+import RPi.GPIO as GPIO
+
+VERBOSE= = TRUE
+IP_PORT = 22000
+P_BUTTON = 24
+
+def setup():
+	GPIO.setmode(GPIO.BOARD)
+	GPIO.setup(P_BUTTON, GPIO.IN, GPIO.PUD_UP)
+
+def debug(text):
+	if VERBOSE:
+		print "Debug:---", text
+
+# ------ class SocketHandler -----
+class SocketHandler(Thread):
+	def __init__(self, conn):
+		Thread.__init(self)
+		self.conn = conn
+
+	def run(self):
+		global isConnected
+		debug("SocketHandler started")
+		while True:
+			cmd = ""	
+			try:
+				debug("Calling blocking conn.recv()")
+				cmd = self.conn.recv(1024)
+			except:
+				debug("exception in conn.recv()")
+				# happens when connection is reset from the peer
+				break
+			debug("Received cmd: " + cmd + " len: " + str(len(cmd)))
+		if len(cmd) == 0:
+			break
+		self.executeCommand(cmd)
+	conn.close()
+	print "Client disconnected. Waiting for next client..."
+	isConnected = False
