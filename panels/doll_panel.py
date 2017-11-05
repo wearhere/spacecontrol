@@ -48,6 +48,7 @@ touch_def = {
 CONTROL_SCHEMES = [
     {
         'id': 'rat_bite_rat_tail',
+        'sounds': ['squeaky kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -56,6 +57,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_cat_bite',
+        'sounds': ['cat bite.wav', 'squeaky rat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -64,6 +66,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_cat_claw',
+        'sounds': ['cat scratch.wav', 'rat squeak.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -72,6 +75,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_octo_bite',
+        'sounds': ['water churn.wav', 'squeaky kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -80,6 +84,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_octo_tentacle',
+        'sounds': ['tent squish.wav', 'dog toy squish.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -88,6 +93,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_bite',
+        'sounds': ['kiss.wav', 'girl kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -96,6 +102,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_nipple',
+        'sounds': ['nipple giggle.wav', 'squeaky kiss.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -104,6 +111,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_girl_pussy',
+        'sounds': ['girl resistant moan.wav', 'laughingmice.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -112,6 +120,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_bite_bird_bite',
+        'sounds': ['chomp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -120,6 +129,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_body_octo_tentacle',
+        'sounds': ['water splash.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -128,6 +138,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_body_blood_a',
+        'sounds': ['water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -136,6 +147,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_body_blood_o',
+        'sounds': ['water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -144,6 +156,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_body_syringe',
+        'sounds': ['squeaky rat.wav'],
         'state': '-1',
         'actions': {
             '-1': '',
@@ -154,6 +167,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_body_bird_bite',
+        'sounds': ['chomp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -162,6 +176,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_cat_bite',
+        'sounds': ['cat bite.wav', 'squeaky rat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -170,6 +185,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_cat_claw',
+        'sounds': ['cat scratch.wav', 'rat squeak.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -178,6 +194,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_octo_bite',
+        'sounds': ['octo whimper.wav', 'squeaky rat.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -186,6 +203,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_octo_tentacle',
+        'sounds': ['clown-teehee.wav', 'dog toy squish.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -194,6 +212,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_bite',
+        'sounds': ['chomp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -202,6 +221,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_nipple',
+        'sounds': ['girl gasp.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -210,6 +230,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'rat_tail_girl_pussy',
+        'sounds': ['girl scream rat tail.wav', 'rat squeak.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -218,6 +239,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_cat_claw',
+        'sounds': ['long purr.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -226,6 +248,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_octo_bite',
+        'sounds': ['cat slurp.wav', 'water churn.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -234,6 +257,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_octo_tentacle',
+        'sounds': ['cat bite.wav', 'octo whimper.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -242,6 +266,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_bite',
+        'sounds': ['kiss breath.wav', 'light purr.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -250,6 +275,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_nipple',
+        'sounds': ['nipple giggle.wav', 'kitten meow.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -258,6 +284,7 @@ CONTROL_SCHEMES = [
     },
     {
         'id': 'cat_bite_girl_pussy',
+        'sounds': ['meow commercial.wav'],
         'state': '0',
         'actions': {
             '0': '',
@@ -493,7 +520,7 @@ class DollPanel(PanelStateBase):
         if len(control) > 0:
             print('Sending: {0} to {1}'.format(id, action))
             if control['sounds']:
-                self.sound_system.play_sounds([])
+                self.sound_system.play_sounds(control['sounds'])
             yield control[0], action
         return
     except ValueError:
