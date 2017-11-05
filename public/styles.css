@@ -1,3 +1,5 @@
+/* HACK(jeff): All margins in this file are calculated for a 1280x720px screen. */
+
 body {
   color: white;
   /* TODO(jeff): Arcade font: https://github.com/wearhere/spacecontrol/issues/62; */
@@ -100,7 +102,7 @@ td {
 
 .scoreboard[data-end-scroll="player-score"] .status {
   /* HACK(jeff): This corrects for the scoreboard's translation. */
-  bottom: 7em;
+  bottom: 3em;
 
   opacity: 0;
 
@@ -118,7 +120,7 @@ td {
 
 .scoreboard[data-end-scroll="other-scores-including-player"] .status {
   /* HACK(jeff): This corrects for the scoreboard's translation. */
-  bottom: 4em;
+  bottom: 1em;
 }
 
 @keyframes zoomlefttoright {
@@ -146,7 +148,7 @@ td {
 @keyframes scroll-to-player-score {
   from { transform: translateY(100vh); }
   /* Nice top margin after scrolling. */
-  to { transform: translateY(25vh); }
+  to { transform: translateY(10vh); }
 }
 
 .scoreboard[data-end-scroll="player-score"] {
@@ -166,12 +168,12 @@ td {
 }
 
 .scoreboard[data-end-scroll="other-scores"] .player-score {
-  margin-bottom: 100vh;
+  margin-bottom: 90vh;
 }
 
 .scoreboard[data-end-scroll="other-scores-including-player"] {
   /* Roughly sync the position of the scoreboard including the player, with the board without */
-  transform: translateY(10vh);
+  transform: translateY(0vh);
 }
 
 @keyframes show {
