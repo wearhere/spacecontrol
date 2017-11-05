@@ -49,6 +49,7 @@ def main():
     sys.exit(0)
 
   signal.signal(signal.SIGINT, signal_handler)
+  signal.signal(signal.SIGALRM, signal_handler)
 
 if __name__ == '__main__':
   main()

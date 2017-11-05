@@ -7,6 +7,7 @@ import json
 import multiprocessing
 from Queue import Empty as EmptyQueueException
 import os
+import signal
 import socket
 import struct
 import sys
@@ -134,7 +135,14 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, 
       panel_state.panel_main(action_queue, message_queue)
       return
 
+    panel_state.last_keep_alive = time.time()
+
     while True:
+      if (time.time() - panel_state.last_keep_alive) > 10:
+        # Server must have crashed. Kill us so that we'll reconnect by way of the parent process'
+        # monitor.
+        os.kill(os.getppid(), signal.SIGALRM)
+
       # TODO: add support for the panel to update available controls
       for update in panel_state.get_state_updates():
         if update is None:
@@ -143,12 +151,17 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, 
         action_queue.put(_make_update_message(update))
       try:
         message = message_queue.get(block=False)
+        if not message:
+          return
+
         if message['message'] == 'set-display':
           panel_state.display_message(message['data']['message'])
         elif message['message'] == 'set-status':
           panel_state.display_status(message['data']['message'])
         elif message['message'] == 'set-progress':
           panel_state.display_progress(message['data']['value'])
+        elif message['message'] == 'keep-alive':
+          panel_state.last_keep_alive = time.time()
       except EmptyQueueException:
         pass
       time.sleep(MIN_LATENCY_MS / 1000)
@@ -161,7 +174,13 @@ def _server_io_subprocess_main(
     action_queue,
     message_queue,
     messenger_factory=lambda: SpaceTeamMessenger(socket.socket)):
-  messenger = messenger_factory()
+  try:
+    messenger = messenger_factory()
+  except Exception as e:
+    # Server must have crashed. Kill us so that we'll reconnect by way of the parent process'
+    # monitor.
+    os.kill(os.getppid(), signal.SIGALRM)
+    return
 
   try:
     while True:
@@ -173,6 +192,11 @@ def _server_io_subprocess_main(
         messenger.send(action)
       except EmptyQueueException:
         pass
+      except Exception as err:
+        # Server must have crashed. Kill us so that we'll reconnect by way of the parent process'
+        # monitor.
+        os.kill(os.getppid(), signal.SIGALRM)
+
       for message in messenger.get_messages():
         message_queue.put(message)
       #time.sleep(MIN_LATENCY_MS / 1000)
