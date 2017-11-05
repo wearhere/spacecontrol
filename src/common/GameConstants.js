@@ -58,7 +58,8 @@ const TIME_TO_DIE_MS = 3000;
 const TIME_TO_STEP_SCOREBOARD = 10 * 1000;
 
 // The number of high scores to record.
-const MAX_SCOREBOARD_LENGTH = 10;
+// HACK(jeff): 7 is all that will fit on a 1280x720px screen.
+const MAX_SCOREBOARD_LENGTH = 7;
 
 module.exports = {
   GAME_STATE,
