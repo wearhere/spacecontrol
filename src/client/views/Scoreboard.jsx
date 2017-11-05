@@ -137,7 +137,7 @@ export default class ScoreboardContainer extends React.Component {
         <RefedScoreboardContainer data-end-scroll='other-scores-including-player'>
           <Scoreboard scores={scores}/>
 
-          <RefedKeyHint triggerKey=' '>Hit space to reset game</RefedKeyHint>
+          <RefedKeyHint triggerKey=' '>Hit space bar to reset</RefedKeyHint>
         </RefedScoreboardContainer>
       );
     } else {
@@ -152,7 +152,7 @@ export default class ScoreboardContainer extends React.Component {
                 onSubmit={::this.onSubmitScore}
                 onEscape={::this.onSkipScore}/>
 
-              <RefedKeyHint triggerKey='Escape'>Hit escape to skip</RefedKeyHint>
+              <RefedKeyHint triggerKey='Escape'>Hit escape key to skip</RefedKeyHint>
             </div>
           ) : (
             <div>
@@ -160,7 +160,7 @@ export default class ScoreboardContainer extends React.Component {
 
               <Scoreboard scores={scores}/>
 
-              <RefedKeyHint triggerKey=' '>Hit space to reset game</RefedKeyHint>
+              <RefedKeyHint triggerKey=' '>Hit space bar to reset</RefedKeyHint>
             </div>
           )}
         </RefedScoreboardContainer>
