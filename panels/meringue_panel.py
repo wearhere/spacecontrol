@@ -34,7 +34,7 @@ CONTROL_SCHEMES = [
   },
   {
     # hynek: [1, 2, 3, 4, 5, 6, 7] [0-4095 % 5] 
-    'id': 'slide_2_hynek',
+    'id': 'slide_2_encounters',
     'state': '0',
     'actions': {
       '0': 'First kind: UFO on the horizon!',
@@ -54,12 +54,12 @@ CONTROL_SCHEMES = [
     'id': 'rs_1_rainbow',
     'state': '0',
     'actions': {
-      '0': 'Strawberries',
-      '1': 'Orange',
-      '2': 'Banana',
-      '3': 'Cucumber',
-      '4': 'Blueberries',
-      '5': 'Eggplant'
+      '5': 'Strawberries',
+      '4': 'Orange',
+      '3': 'Banana',
+      '2': 'Cucumber',
+      '1': 'Blueberries',
+      '0': 'Eggplant'
     },
   },
   {
@@ -75,18 +75,18 @@ CONTROL_SCHEMES = [
       '5': 'Manhattan sky'
     },
   },
-  {
+  #{
     # Kardashev scale of civilization [1-5] [3950] % 5
-    'id': 'rs_3_kardashev',
-    'state': '0',
-    'actions': {
-      '0': 'Type I: planetary civilization with a parent star',
-      '1': 'Type II: planet harvests full energy of parent star',
-      '2': 'Type III: civilization controls entire galaxy',
-      '3': 'Type IV: civilization controls entire universe',
-      '4': 'Type V: civilization controls collections of universes!',
-    },
-  },
+   # 'id': 'rs_3_kardashev',
+   # 'state': '0',
+   # 'actions': {
+   #   '0': 'Type I: planetary civilization with a parent star',
+   #   '1': 'Type II: planet harvests full energy of parent star',
+   #   '2': 'Type III: civilization controls entire galaxy',
+   #   '3': 'Type IV: civilization controls entire universe',
+   #   '4': 'Type V: civilization controls collections of universes!',
+   # },
+  #},
   # LIGHT UP BUTTONS
   {
     # top button blue
@@ -150,33 +150,33 @@ CONTROL_SCHEMES = [
     },
   },
   # TRIPLE SWITCHES
-  {
-    'id': 'tongue_tsw',
-    'state': 'neutral',
-    'actions': {
-      'neutral': 'Tongue sticks straight out',
-      'up': 'Tongue licks all the way up',
-      'down': 'Tongue licks all the way down',
-      },
-  },
-  {
-    'id': 'light_blue_sw',
-    'state': 'neutral',
-    'actions': {
-      'neutral': 'Periwinkle dick is chilling',
-      'up': 'Periwinkle dick is hard',
-      'down': 'Periwinkle dick is flaccid',
-      },
-  },
-  {
-    'id': 'big_balls_sw',
-    'state': 'neutral',
-    'actions': {
-      'neutral': 'Big balls dick is chilling',
-      'up': 'Big ball dick is hard',
-      'down': 'Big ball dick is flaccid',
-    },
-  },
+  #{
+  #  'id': 'tongue_tsw',
+  #  'state': 'neutral',
+  #  'actions': {
+  #    'neutral': 'Tongue sticks straight out',
+  #    'up': 'Tongue licks all the way up',
+  #    'down': 'Tongue licks all the way down',
+  #    },
+  #},
+  #{
+  #  'id': 'light_blue_sw',
+  #  'state': 'neutral',
+  #  'actions': {
+  #    'neutral': 'Periwinkle dick is chilling',
+  #    'up': 'Periwinkle dick is hard',
+  #    'down': 'Periwinkle dick is flaccid',
+  #    },
+  #},
+  #{
+  #  'id': 'big_balls_sw',
+  #  'state': 'neutral',
+  #  'actions': {
+  #    'neutral': 'Big balls dick is chilling',
+  #    'up': 'Big ball dick is hard',
+  #    'down': 'Big ball dick is flaccid',
+  #  },
+  #},
 ]
         #'actions': [['0', '1', '2'], 'Set Froomulator to %s!'],
         # TODO: do we care about the type of controller?
@@ -218,7 +218,9 @@ class MeringuePanel(PanelStateBase):
 
   def display_status(self, message):
     """Prints the message with a prefix (to differentiate it from what the user types)."""
+    # when received, put on fourth
     print('> ' + message)
 
   def display_progress(self, value):
+    # when recieved, put on fourth
     pass

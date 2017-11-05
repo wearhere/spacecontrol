@@ -3,7 +3,7 @@ import serial
 import time
 
 class Blackpill(object):
-  def __init__(self, port, num_pins=18):
+  def __init__(self, port, num_pins=11):
     # may need this later? 
     self.samples_per_second = 100
     self.num_pins = num_pins

@@ -2,7 +2,7 @@
 """ Initializes and gives access to peripherals """
 
 from blackpill import Blackpill
-BLACKPILL = Blackpill('/dev/ttyAMA0')
+BLACKPILL = Blackpill('/dev/ttyACM0')
 
 ALL = [
   BLACKPILL,
