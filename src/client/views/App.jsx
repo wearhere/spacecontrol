@@ -53,6 +53,9 @@ class App extends React.Component {
 
   onKeyDown(e) {
     if (e.key === ' ') {
+      // By default the webpage scrolls a little bit--looks weird / introduces bottom margin.
+      e.preventDefault();
+
       if (this.props.state === WAITING_TO_START) {
         const timeToStart = this.props.timeToStart;
         if (_.isNumber(timeToStart) && (timeToStart > 5 * 1000)) {
