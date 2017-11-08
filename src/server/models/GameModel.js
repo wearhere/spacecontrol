@@ -66,13 +66,13 @@ const GameModel = Backbone.Model.extend({
       add: () => {
         if (this.get('state') === WAITING_FOR_PLAYERS) {
           this.set('state', WAITING_TO_START);
-        } else if (this.get('state') === WAITING_TO_START) {
-          const allPlayersJoined = this._playingPanels.length === this.panels.length;
-          const timeToStart = this.get('timeToStart');
-          if (allPlayersJoined && _.isNumber(timeToStart) && (timeToStart > 5 * 1000)) {
-            // Skip to 5 seconds to start if there are no more players to join.
-            this.set('timeToStart', 5 * 1000);
-          }
+        }
+
+        const allPlayersJoined = this._playingPanels.length === this.panels.length;
+        const timeToStart = this.get('timeToStart');
+        if (allPlayersJoined && _.isNumber(timeToStart) && (timeToStart > 5 * 1000)) {
+          // Skip to 5 seconds to start if there are no more players to join.
+          this.set('timeToStart', 5 * 1000);
         }
       },
 
