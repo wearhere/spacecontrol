@@ -116,14 +116,6 @@ def _make_announce_message(controls):
   return {'message': 'announce', 'data': {'controls':controls}}
 
 
-def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, panel_io_started):
-
-
-def _server_io_subprocess_main(
-    action_queue,
-    message_queue,
-
-
 class PanelAbort(Exception):
     pass
 
@@ -147,7 +139,7 @@ class PanelClient:
       print(e)
       return
 
-    action_queue.put(_make_announce_message(controls))
+    self._action_queue.put(_make_announce_message(controls))
     if getattr(self._panel_state, 'panel_main', False):
       panel_state.panel_main(self._action_queue, self._message_queue)
       return
@@ -155,20 +147,27 @@ class PanelClient:
     # main i/o loop
     try:
       while True:
-        self.panel_io()
-        # TODO: add support for the panel to update available controls
-        self.server_io()
-    time.sleep(MIN_LATENCY_MS / 1000)
+        self.do_io()
+        time.sleep(MIN_LATENCY_MS / 1000)
 
     except PanelAboort:
       print('Panel implementation requested abort. Shutting down...')
 
+  def _do_io():
+    for update in self._panel_state.get_state_updates():
+      if update is None:
+        # received shutdown signal
+        raise PanelAbort()
+      self._messenger.send(make_update_message(update))    
+    for message in self._messenger.get_messages():
+      self._handle_message(message)
+      
   def _panel_io():
     for update in self._panel_state.get_state_updates():
       if update is None:
         # received shutdown signal
         raise PanelAbort()
-      self._action_queue.append(_make_update_message(update))
+      self._action_queue.append(_update))
       for message in self._message_queue:
         self._handle_message(message)
 
