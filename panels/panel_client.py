@@ -1,3 +1,5 @@
+# TODO(dawnho): pull shared code out of this and panel_client_synchronous.py; put into shared module
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

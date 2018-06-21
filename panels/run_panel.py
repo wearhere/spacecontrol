@@ -9,7 +9,8 @@ import argparse
 import doll_panel
 import keyboard_panel
 
-from panel_client import PanelClient
+from panel_client import PanelClient as PanelClientAsync
+from panel_client_synchronous import PanelClient
 
 import os
 import signal
@@ -30,6 +31,10 @@ def main():
       default='1',
       choices=[1, 2],
       type=int)
+  parser.add_argument(
+      '--run_synchronous',
+      default=True,
+      type=bool)
   args = parser.parse_args()
 
   panel_class = [
@@ -40,15 +45,21 @@ def main():
     new_stdin = os.fdopen(os.dup(sys.stdin.fileno()))
     panel_class = lambda: keyboard_panel.KeyboardPanel(new_stdin, args.player_number)
 
-  client = PanelClient(panel_class)
+  if args.run_synchronous:
+    client = PanelClient(panel_class)
+    client.start()
+    print("Client exited normally")
+    return
 
-  client.start()
+  else:
+    client = PanelClientAsync(panel_class)
+    client.start()
 
-  def signal_handler(signal, frame):
-    client.stop()
-    sys.exit(0)
+    def signal_handler(signal, frame):
+      client.stop()
+      sys.exit(0)
 
-  signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
   main()
