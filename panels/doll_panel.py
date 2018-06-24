@@ -40,9 +40,7 @@ touch_def = {
     '12': 'syringe',
     '13': 'clown_butt',
     '14': 'bird_bite',
-    # '15': 'clown belly',
-    # '16': 'clown_dick',
-    # '17': 'bird_shake'
+    '15': 'clown_dick'
 }
 
 CONTROL_SCHEMES = [
@@ -501,6 +499,15 @@ CONTROL_SCHEMES = [
             '2': 'Feed some Hemoglobin to the Vampire Bird',
         }
     },
+    {
+        'id': 'clown_dick_',
+        'sounds': ['octo whimper.wav'],
+        'state': '0',
+        'actions': {
+            '0': 'Clown loses his erection',
+            '1': 'Clown gets hella turned on!'
+        }
+    }
 ]
 
 def poll_doll_input(input_queue):
@@ -526,8 +533,8 @@ class DollPanel(PanelStateBase):
     self.input_thread = threading.Thread(
         target=poll_doll_input, args=(self.input_queue,))
     self.input_thread.start()
-    self.lcd = ProgressLCD(rs_pin=25, en_pin=24, d4_pin=23, d5_pin=17,
-      d6_pin=21, d7_pin=22)
+    # self.lcd = ProgressLCD(rs_pin=25, en_pin=24, d4_pin=23, d5_pin=17,
+    #   d6_pin=21, d7_pin=22)
     self.sound_system = SoundSystem()
 
   def get_state_updates(self):
