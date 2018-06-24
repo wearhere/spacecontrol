@@ -1,11 +1,12 @@
 const byte touch = 15;
 const byte testtubes = 3;
 const byte idx = 0;
-int pins[touch] = {PB12, PB13, PB14, PB15, PA8, PA9, PA10, PB6, PB7, PB8, PB9, PB11, PA7};
+int pins[touch] = {PB12, PB13, PB14, PB15, PA8, PA9, PA10, PB6, PB7, PB8, PB9, PB11, PA7, PA6, PA3};
 int syringe = PA7;
 int syringe_key = 12;
 int tubes[testtubes] = {PB10, PB1, PB0};
 int color = -1;
+int dick = PA4;
 
 int lastIOn;
 int lastXOn;
@@ -17,6 +18,7 @@ int timeElapsedTime = 5000;
 int timeElapsedColor = 10000;
 
 int state[touch][touch];
+int dick_state = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -29,6 +31,7 @@ void setup() {
   for (byte t=0; t<touch; t++) {
     pinMode(tubes[t], INPUT_PULLUP);
   }
+  pinMode(dick, INPUT_PULLUP);
 }
 
 void loop() {
@@ -89,7 +92,7 @@ void loop() {
     timeElapsedOff = timeElapsedOff + 100;
     pinMode(pins[c], INPUT_PULLUP);
   }
-  
+
   // Sensing Test Tube Colors
   pinMode(syringe, OUTPUT);
   digitalWrite(syringe, LOW);
@@ -100,4 +103,21 @@ void loop() {
     }
   }
   pinMode(syringe, INPUT_PULLUP);
+
+  // Sensing Clown Dick
+  if (digitalRead(dick)==LOW && dick_state != 1) {
+    Serial.print("1");
+    Serial.print(",");
+    Serial.print("15");
+    Serial.print(" ");
+    Serial.print("\n");
+    dick_state = 1;
+  } else if (digitalRead(dick)==HIGH && dick_state != 0) {
+    Serial.print("0");
+    Serial.print(",");
+    Serial.print("15");
+    Serial.print(" ");
+    Serial.print("\n");
+    dick_state = 0;
+  }
 }

@@ -37,10 +37,6 @@ const PanelModel = Backbone.Model.extend({
       }
     });
 
-    this._keepAliveInterval = setInterval(() => {
-      this._send('keep-alive');
-    }, 1000);
-
     this.once('destroy', () => clearInterval(this._keepAliveInterval));
   },
 

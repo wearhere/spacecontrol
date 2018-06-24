@@ -3,7 +3,7 @@ const PanelModel = require('./models/PanelModel');
 const net = require('net');
 
 const server = net.createServer((connection) => {
-  const address = connection.address().address;
+  const address = connection.remoteAddress;
 
   console.log(`Connection from ${address} opened`);
   connection.once('close', () => {
