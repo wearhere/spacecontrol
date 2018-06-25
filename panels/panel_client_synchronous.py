@@ -152,6 +152,9 @@ class PanelClient:
 
     except PanelAboort:
       print('Panel implementation requested abort. Shutting down...')
+      return
+    except Exception:
+      raise
 
   def _do_io():
     for update in self._panel_state.get_state_updates():
