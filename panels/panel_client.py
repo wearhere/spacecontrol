@@ -7,6 +7,7 @@ import json
 import multiprocessing
 from Queue import Empty as EmptyQueueException
 import os
+import sdnotify
 import socket
 import struct
 import sys
@@ -119,6 +120,8 @@ def _make_announce_message(controls):
 def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, panel_io_started):
   panel_state = panel_state_factory()
   controls = panel_state.get_controls()
+  notifier = sdnotify.SystemdNotifier()
+  notifier.notify("READY=1")
 
   try:
     _validate_controls(controls)
@@ -135,6 +138,7 @@ def _panel_io_subprocess_main(panel_state_factory, action_queue, message_queue, 
       return
 
     while True:
+      notifier.notify("WATCHDOG=1")
       # TODO: add support for the panel to update available controls
       for update in panel_state.get_state_updates():
         if update is None:

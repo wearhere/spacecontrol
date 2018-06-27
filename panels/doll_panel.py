@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import json
 import Queue
-from progress_lcd import ProgressLCD
+from i2c_lcd import I2CLCD
 from sound_system import SoundSystem
 import select
 import serial
@@ -533,16 +533,16 @@ class DollPanel(PanelStateBase):
     self.input_thread = threading.Thread(
         target=poll_doll_input, args=(self.input_queue,))
     self.input_thread.start()
-    # self.lcd = ProgressLCD(rs_pin=25, en_pin=24, d4_pin=23, d5_pin=17,
-    #   d6_pin=21, d7_pin=22)
+    self.lcd = I2CLCD()
     self.sound_system = SoundSystem()
 
   def get_state_updates(self):
     """Returns an iterable of control_id, state pairs for new user input."""
     try:
-        action, key = self.input_queue.get(block=False).rstrip().split(',')
-        first, second = key.split(' ')
-        id = '{0}_{1}'.format(touch_def[first], touch_def[second])
+        serial_input = self.input_queue.get(block=False)
+        action, key = serial_input.rstrip().split(',')
+        first, second = key.split('.')
+        id = '{0}_{1}'.format(touch_def[first], touch_def.get(second, ''))
 
         print('Setting {0} to {1}'.format(id, action))
         control = [c for c in CONTROL_SCHEMES if c['id'] == id]
@@ -552,12 +552,10 @@ class DollPanel(PanelStateBase):
                 self.sound_system.play_sounds(control[0]['sounds'])
             yield control[0]['id'], action
         return
-    except ValueError:
-      print("Error logging control: {0}, action: {1}".format(control[0]['id'], action))
-      self.display_message(
-          'Invalid format. Must be of the form "control_id state"')
+    except ValueError as e:
+        print("Error logging control: {0}".format(e))
     except Queue.Empty:
-      return
+        return
 
   def get_controls(self):
     """Must implement this function for your panel.
