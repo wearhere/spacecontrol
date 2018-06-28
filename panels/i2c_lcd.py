@@ -19,6 +19,12 @@ class I2CLCD:
         self._num_cols = num_cols
 
     def _gen_text(self, message):
+	if len(message) == 0:
+            blank_line = " " * self._num_cols
+	    self._lines[0] = blank_line
+            self._lines[1] = blank_line
+            self._lines[2] = blank_line
+	    return 
         words = iter(message.split())
         lines, current = [], next(words)
         for word in words:
@@ -35,10 +41,11 @@ class I2CLCD:
 
     def _gen_progress(self, progress):
         # self._lines[3] = ('#' * (int(progress*self._num_cols))).ljust(self._num_cols)
-        self._lines[3] = ('#' * (int(progress/100*self._num_cols))).ljust(self._num_cols)
+        self._lines[3] = ('#' * (int(int(progress)*self._num_cols/100))).ljust(self._num_cols)
+        print self._lines[3]
 
     def _gen_status(self, status):
-        self._lines[3] = status[:self._num_cols]
+        self._lines[3] = status[:self._num_cols].ljust(self._num_cols)
 
     def display_message(self, message):
         self._gen_text(message)
