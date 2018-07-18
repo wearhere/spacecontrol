@@ -127,19 +127,19 @@ class PanelClient:
     self._action_queue = []
     self._message_queue = []
     self._panel_state = panel_state_factory()
-    self._controls = self_panel_state.get_controls()
+    self._controls = self._panel_state.get_controls()
     self._messenger = SpaceTeamMessenger(socket.socket)
     
   def start(self):
     """Main loop to perform panel IO and communicate with server."""
     
     try:
-      _validate_controls(controls)
+      _validate_controls(self._controls)
     except Exception as e:
       print(e)
       return
 
-    self._action_queue.put(_make_announce_message(controls))
+    self._messenger.send(_make_announce_message(self._controls))
     if getattr(self._panel_state, 'panel_main', False):
       panel_state.panel_main(self._action_queue, self._message_queue)
       return
@@ -147,34 +147,34 @@ class PanelClient:
     # main i/o loop
     try:
       while True:
-        self.do_io()
+        self._do_io()
         time.sleep(MIN_LATENCY_MS / 1000)
 
-    except PanelAboort:
+    except PanelAbort:
       print('Panel implementation requested abort. Shutting down...')
       return
     except Exception:
       raise
 
-  def _do_io():
+  def _do_io(self):
     for update in self._panel_state.get_state_updates():
       if update is None:
         # received shutdown signal
         raise PanelAbort()
-      self._messenger.send(make_update_message(update))    
+      self._messenger.send(_make_update_message(update))    
     for message in self._messenger.get_messages():
       self._handle_message(message)
       
-  def _panel_io():
+  def _panel_io(self):
     for update in self._panel_state.get_state_updates():
       if update is None:
         # received shutdown signal
         raise PanelAbort()
-      self._action_queue.append(_update))
+      self._action_queue.append(_update)
       for message in self._message_queue:
         self._handle_message(message)
 
-  def _server_io():
+  def _server_io(self):
     for action in self._action_queue:
       if action is None:
         # received shutdown signal
@@ -184,14 +184,17 @@ class PanelClient:
     for message in self._messenger.get_messages():
       self._message_queue.append(message)
         
-  def _handle_message(message):
+  def _handle_message(self, message):
     if message['message'] == 'set-display':
       self._panel_state.display_message(message['data']['message'])
     elif message['message'] == 'set-status':
       self._panel_state.display_status(message['data']['message'])
+    elif message['message'] == 'set-integrity':
+      self._panel_state.display_progress(message['data']['value']/100.0)
     elif message['message'] == 'set-progress':
       self._panel_state.display_progress(message['data']['value'])
-    else print('WARNING: unrecognized message type {} in message {}'.format(message['message'], message))
+    else:
+      print('WARNING: unrecognized message type {} in message {}'.format(message['message'], message))
 
 
 
