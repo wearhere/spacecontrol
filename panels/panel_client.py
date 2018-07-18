@@ -14,6 +14,7 @@ import socket
 import struct
 import sys
 import time
+import traceback 
 
 # Time to wait for panel IO to start
 PANEL_IO_START_SECONDS = 2
@@ -235,13 +236,16 @@ class SpaceTeamMessenger:
     # Connect to controller and appraise it of our controls.
     # Make the connection non-blocking _after_ connecting to avoid this nonsense:
     # https://stackoverflow.com/a/6206705/495611
-    self._socket = socket_class(socket.AF_INET, socket.SOCK_STREAM)
-    self._socket.connect((
-      os.getenv('CONTROLLER_IP', 'localhost'),
-      os.getenv('CONTROLLER_PORT', 8000)
-    ))
-    self._socket.setblocking(0)
-    self._msg_buffer = ''
+    try:
+      self._socket = socket_class(socket.AF_INET, socket.SOCK_STREAM)
+      self._socket.connect((
+        os.getenv('CONTROLLER_IP', 'localhost'),
+        os.getenv('CONTROLLER_PORT', 8000)
+      ))
+      self._socket.setblocking(0)
+      self._msg_buffer = ''
+    except:
+      sys.exit(1)
 
   def peek_buffer(self):
     return self._msg_buffer
@@ -253,6 +257,7 @@ class SpaceTeamMessenger:
       while len(self._msg_buffer) >= 4:
         message = self._pop_from_buffer()
         if message:
+          print("Received: {}".format(message))
           yield message
         else:
           return
@@ -273,7 +278,11 @@ class SpaceTeamMessenger:
     return json.loads(msg)
 
   def send(self, message):
-    self._socket.sendall(_encode(message))
+    print("Sending: {}".format(message))
+    try:
+      self._socket.sendall(_encode(message))
+    except:
+      sys.exit(1)
 
 def _encode(message):
   jstr = json.dumps(message)

@@ -44,6 +44,8 @@ class ProgressLCD:
     def display_status(self, status):
         self._gen_status(status)
         self._lcd.clear()
+#        self._lcd.clear()
+#        self._lines[self._num_rows-1] = status[:self._num_cols]
         self._lcd.message('\n'.join(self._lines))
 
     def _add_text(self, message):
